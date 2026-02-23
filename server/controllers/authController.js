@@ -42,12 +42,18 @@ exports.registerUser = async (req, res) => {
       email: email.trim().toLowerCase(),
       password: hashedPassword
     });
+    const token = jwt.sign(
+  { id: user._id },
+  process.env.JWT_SECRET,
+  { expiresIn: "7d" }
+);
 
     res.status(201).json({
-      _id: user._id,
-      name: user.name,
-      email: user.email
-    });
+  token,
+  _id: user._id,
+  name: user.name,
+  email: user.email
+});
 
   } catch (error) {
     res.status(500).json({ message: error.message });
