@@ -111,12 +111,14 @@ useEffect(() => {
             <div className="bg-yellow-100 text-black p-4 rounded">
               <p><strong>Word Count:</strong> {result.wordCount}</p>
               <p><strong>Character Count:</strong> {result.charCount}</p>
-              <p><strong>Quantification Score:</strong> <div className="space-y-1">
+              <div>
+              <p><strong>Quantification Score:</strong></p>
+              <div className="space-y-1">
   <p>Total Bullets: {result.quantification.total_bullets}</p>
   <p>Quantified Bullets: {result.quantification.quantified_bullets}</p>
   <p>Percentage Mentions: {result.quantification.percentage_mentions}</p>
   <p>Number Mentions: {result.quantification.number_mentions}</p>
-</div></p>
+</div></div>
             </div>
 
             <div className="bg-gray-50 p-4 rounded">

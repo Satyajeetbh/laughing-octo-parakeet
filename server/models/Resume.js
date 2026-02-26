@@ -16,6 +16,27 @@ const resumeSchema = new mongoose.Schema(
       percentage_mentions: Number,
       number_mentions: Number,
     },
+    resumeScore: {
+    type: Number,
+    default: 0
+    },
+    scoreBreakdown: {
+    bulletScore: Number,
+    quantScore: Number,
+    skillsScore: Number,
+    actionScore: Number,
+    lengthScore: Number
+    },
+    feedback: {
+    strengths: [String],
+    improvements: [String]
+    },
+    jdMatch: {
+    matchPercentage: Number,
+    matchedKeywords: [String],
+    missingKeywords: [String]
+    },
+    finalScore: Number,
     sections: {
       type: Map,
       of: String,

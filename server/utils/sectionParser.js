@@ -1,44 +1,60 @@
 const parseSections = (text) => {
-  const lowerText = text.toLowerCase()
+  if (!text || typeof text !== "string") {
+    return {
+      skills: "",
+      experience: "",
+      projects: "",
+      education: ""
+    }
+  }
 
-  const headings = [
-    { key: "skills", match: ["skills", "technical skills"] },
-    { key: "experience", match: ["experience", "work experience", "professional experience"] },
-    { key: "projects", match: ["projects", "personal projects"] },
-    { key: "education", match: ["education", "academic background"] }
-  ]
+  const lines = text
+    .split("\n")
+    .map(line => line.trim())
+    .filter(Boolean)
 
-  let indices = []
+  const sectionPatterns = {
+    skills: [/^skills$/i, /^technical skills$/i, /^skills & tools$/i],
+    experience: [/^experience$/i, /^work experience$/i, /^professional experience$/i],
+    projects: [/^projects$/i, /^personal projects$/i, /^relevant projects$/i],
+    education: [/^education$/i, /^academic background$/i]
+  }
 
-  headings.forEach(section => {
-    section.match.forEach(word => {
-      const index = lowerText.indexOf(word)
-      if (index !== -1) {
-        indices.push({ key: section.key, index })
+  const sections = {
+    skills: [],
+    experience: [],
+    projects: [],
+    education: []
+  }
+
+  let currentSection = null
+
+  for (let line of lines) {
+    let matchedSection = null
+
+    for (let key in sectionPatterns) {
+      if (sectionPatterns[key].some(pattern => pattern.test(line))) {
+        matchedSection = key
+        break
       }
-    })
-  })
+    }
 
-  indices.sort((a, b) => a.index - b.index)
+    if (matchedSection) {
+      currentSection = matchedSection
+      continue
+    }
 
-  let parsed = {
-    skills: "",
-    experience: "",
-    projects: "",
-    education: ""
+    if (currentSection) {
+      sections[currentSection].push(line)
+    }
   }
 
-  for (let i = 0; i < indices.length; i++) {
-    const current = indices[i]
-    const next = indices[i + 1]
-
-    const start = current.index
-    const end = next ? next.index : text.length
-
-    parsed[current.key] = text.slice(start, end).trim()
+  return {
+    skills: sections.skills.join("\n"),
+    experience: sections.experience.join("\n"),
+    projects: sections.projects.join("\n"),
+    education: sections.education.join("\n")
   }
-
-  return parsed
 }
 
 module.exports = parseSections
