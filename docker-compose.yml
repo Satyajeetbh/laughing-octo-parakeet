@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:5000
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      # Provide the required MongoDB URI here or via an active .env file on the host. It's best to supply it at runtime.
+      # You can override this when running the container
+      - MONGO_URI=${MONGO_URI:-mongodb+srv://placementAdmin:rHgvvmSrg08gaEOI@cluster0.xov0nkf.mongodb.net/placementDB?appName=Cluster0}
+      - JWT_SECRET=${JWT_SECRET:-0b9794e91af3cb125e7ffde00a6da691cf31be10}

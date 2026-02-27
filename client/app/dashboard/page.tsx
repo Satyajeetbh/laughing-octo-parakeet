@@ -8,7 +8,12 @@ type ResumeResponse = {
   wordCount: number;
   charCount: number;
   skills: string[];
-  quantification: number;
+  quantification: {
+    total_bullets: number;
+    quantified_bullets: number;
+    percentage_mentions: number;
+    number_mentions: number;
+  };
   sections: Record<string, string>;
 };
 
@@ -21,16 +26,16 @@ export default function DashboardPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-useEffect(() => {
-  if (!user) {
-    router.push("/login");
-  }
-}, [user, router]);
+  useEffect(() => {
+    if (!user) {
+      router.push("/login");
+    }
+  }, [user, router]);
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!file) {
+    if (!file || !user) {
       setError("Please select a resume file");
       return;
     }
@@ -43,7 +48,7 @@ useEffect(() => {
       formData.append("resume", file); // matches multer field name
 
       const res = await fetch(
-        "http://localhost:5000/api/resume/upload",
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/resume/upload`,
         {
           method: "POST",
           headers: {
@@ -66,7 +71,7 @@ useEffect(() => {
       setLoading(false);
     }
   };
-    if (!user) return null;
+  if (!user) return null;
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
@@ -112,13 +117,13 @@ useEffect(() => {
               <p><strong>Word Count:</strong> {result.wordCount}</p>
               <p><strong>Character Count:</strong> {result.charCount}</p>
               <div>
-              <p><strong>Quantification Score:</strong></p>
-              <div className="space-y-1">
-  <p>Total Bullets: {result.quantification.total_bullets}</p>
-  <p>Quantified Bullets: {result.quantification.quantified_bullets}</p>
-  <p>Percentage Mentions: {result.quantification.percentage_mentions}</p>
-  <p>Number Mentions: {result.quantification.number_mentions}</p>
-</div></div>
+                <p><strong>Quantification Score:</strong></p>
+                <div className="space-y-1">
+                  <p>Total Bullets: {result.quantification.total_bullets}</p>
+                  <p>Quantified Bullets: {result.quantification.quantified_bullets}</p>
+                  <p>Percentage Mentions: {result.quantification.percentage_mentions}</p>
+                  <p>Number Mentions: {result.quantification.number_mentions}</p>
+                </div></div>
             </div>
 
             <div className="bg-gray-50 p-4 rounded">
