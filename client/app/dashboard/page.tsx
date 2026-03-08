@@ -3,6 +3,17 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useRouter } from "next/navigation";
+import { Badge } from "@/components/ui/badge";
+
+import DashboardHeader from "@/components/dashboard/dashboard-header";
+import ResumeUploadCard from "@/components/dashboard/resume-upload-card";
+import StatsGrid from "@/components/dashboard/stats-grid";
+import SkillsCard from "@/components/dashboard/skills-card";
+import SectionsCard from "@/components/dashboard/sections-card";
+import ResumeScoreCard from "@/components/dashboard/resume-score-card";
+import QuantificationChartCard from "@/components/dashboard/quantification-chart-card";
+
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 type ResumeResponse = {
   wordCount: number;
@@ -32,6 +43,37 @@ export default function DashboardPage() {
     }
   }, [user, router]);
 
+    const getResumeStrength = () => {
+    if (!result) return null;
+
+    const sectionCount = Object.keys(result.sections).length;
+    const skillCount = result.skills.length;
+    const quantified = result.quantification.quantified_bullets;
+
+    const score = sectionCount + skillCount + quantified;
+
+    if (score >= 15) {
+      return {
+        label: "Strong structure",
+        variant: "default" as const,
+      };
+    }
+
+    if (score >= 8) {
+      return {
+        label: "Decent foundation",
+        variant: "secondary" as const,
+      };
+    }
+    const strength = getResumeStrength();
+
+    return {
+      label: "Needs work",
+      variant: "outline" as const,
+    };
+  };
+
+
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -45,14 +87,14 @@ export default function DashboardPage() {
 
     try {
       const formData = new FormData();
-      formData.append("resume", file); // matches multer field name
+      formData.append("resume", file);
 
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/resume/upload`,
         {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${user.token}`, // exact format
+            Authorization: `Bearer ${user.token}`,
           },
           body: formData,
         }
@@ -71,91 +113,91 @@ export default function DashboardPage() {
       setLoading(false);
     }
   };
+
+  const strength = getResumeStrength();
+
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
-      <div className="max-w-4xl mx-auto bg-white p-8 rounded shadow">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">
-            Welcome, {user.name}
-          </h1>
-          <button
-            onClick={logout}
-            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-          >
-            Logout
-          </button>
-        </div>
+    <main className="min-h-screen bg-background px-6 py-8">
+      <div className="mx-auto max-w-6xl space-y-10">
 
-        <form onSubmit={handleUpload} className="mb-6">
-          <input
-            type="file"
-            accept=".pdf"
-            onChange={(e) =>
-              setFile(e.target.files ? e.target.files[0] : null)
-            }
-            className="mb-4"
-          />
+        <DashboardHeader name={user.name} onLogout={logout} />
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
-          >
-            {loading ? "Analyzing..." : "Upload Resume"}
-          </button>
-        </form>
+                <section className="grid gap-4 md:grid-cols-3">
+          <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+            <p className="text-sm text-muted-foreground">Signed in as</p>
+            <p className="mt-1 font-medium text-foreground break-all">
+              {user.email}
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+            <p className="text-sm text-muted-foreground">Status</p>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <span className="font-medium text-foreground">
+                {loading
+                  ? "Analyzing..."
+                  : result
+                  ? "Analysis complete"
+                  : "Ready to analyze"}
+              </span>
+
+              {strength && (
+                <Badge variant={strength.variant} className="rounded-full">
+                  {strength.label}
+                </Badge>
+              )}
+            </div>
+          </div>
+        </section>
+
+        <ResumeUploadCard
+          file={file}
+          loading={loading}
+          onFileChange={setFile}
+          onSubmit={handleUpload}
+          clearFile={() => setFile(null)}
+        />
 
         {error && (
-          <p className="text-red-500 mb-4">{error}</p>
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
         )}
 
         {result && (
-          <div className="space-y-6">
-            <div className="bg-yellow-100 text-black p-4 rounded">
-              <p><strong>Word Count:</strong> {result.wordCount}</p>
-              <p><strong>Character Count:</strong> {result.charCount}</p>
-              <div>
-                <p><strong>Quantification Score:</strong></p>
-                <div className="space-y-1">
-                  <p>Total Bullets: {result.quantification.total_bullets}</p>
-                  <p>Quantified Bullets: {result.quantification.quantified_bullets}</p>
-                  <p>Percentage Mentions: {result.quantification.percentage_mentions}</p>
-                  <p>Number Mentions: {result.quantification.number_mentions}</p>
-                </div></div>
-            </div>
+          <>
+    <StatsGrid
+      wordCount={result.wordCount}
+      charCount={result.charCount}
+      skillsCount={result.skills.length}
+      sectionsCount={Object.keys(result.sections).length}
+    />
 
-            <div className="bg-gray-50 p-4 rounded">
-              <h2 className="font-semibold mb-2">Detected Sections</h2>
-              <div className="flex flex-wrap gap-2">
-                {Object.keys(result.sections).map((section, i) => (
-                  <span
-                    key={i}
-                    className="bg-blue-100 text-blue-800 px-3 py-1 rounded text-sm"
-                  >
-                    {section}
-                  </span>
-                ))}
-              </div>
-            </div>
+    <div className="grid gap-6 lg:grid-cols-2">
+      <ResumeScoreCard
+        skillsCount={result.skills.length}
+        sectionsCount={Object.keys(result.sections).length}
+        quantification={result.quantification}
+      />
 
-            <div className="bg-gray-50 p-4 rounded">
-              <h2 className="font-semibold mb-2">Extracted Skills</h2>
-              <div className="flex flex-wrap gap-2">
-                {result.skills.map((skill, i) => (
-                  <span
-                    key={i}
-                    className="bg-green-100 text-green-800 px-3 py-1 rounded text-sm"
-                  >
-                    {skill}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+      <QuantificationChartCard
+        totalBullets={result.quantification.total_bullets}
+        quantifiedBullets={result.quantification.quantified_bullets}
+        percentageMentions={result.quantification.percentage_mentions}
+        numberMentions={result.quantification.number_mentions}
+      />
     </div>
+
+    <div className="grid gap-6 lg:grid-cols-2">
+      <SectionsCard sections={Object.keys(result.sections)} />
+      <SkillsCard skills={result.skills} />
+    </div>
+  </>
+        )}
+
+      </div>
+    </main>
   );
 }
