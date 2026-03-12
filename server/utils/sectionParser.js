@@ -1,60 +1,177 @@
+const normalizeHeading = (line) =>
+  line
+    .toLowerCase()
+    .replace(/[:|]/g, "")
+    .replace(/[-=*#~_]{2,}/g, "") // strip decorative repeated chars like --- or ===
+    .replace(/[^\w\s&/+.-]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const sectionAliases = {
+  summary: [
+    "summary",
+    "professional summary",
+    "profile",
+    "career summary",
+    "about me",
+    "objective",
+    "career objective",
+    "professional profile",
+  ],
+  skills: [
+    "skills",
+    "technical skills",
+    "skills & tools",
+    "skills and tools",
+    "tools & technologies",
+    "tools and technologies",
+    "technologies",
+    "tech stack",
+    "core competencies",
+    "technical proficiencies",
+    "languages",
+    "frameworks",
+    "developer skills",
+    "key skills",
+    "areas of expertise",
+    "expertise",
+  ],
+  experience: [
+    "experience",
+    "work experience",
+    "professional experience",
+    "employment history",
+    "internships",
+    "internship experience",
+    "work history",
+    "career history",
+    "positions held",
+    "relevant experience",
+  ],
+  projects: [
+    "projects",
+    "personal projects",
+    "relevant projects",
+    "academic projects",
+    "project experience",
+    "side projects",
+    "open source",
+    "portfolio",
+    "notable projects",
+  ],
+  education: [
+    "education",
+    "academic background",
+    "academic qualifications",
+    "education and coursework",
+    "qualifications",
+    "degrees",
+    "educational background",
+  ],
+  certifications: [
+    "certifications",
+    "certification",
+    "licenses & certifications",
+    "licenses and certifications",
+    "credentials",
+    "professional certifications",
+  ],
+  training: [
+    "training",
+    "trainings",
+    "courses",
+    "coursework",
+    "professional development",
+    "workshops",
+  ],
+  achievements: [
+    "achievements",
+    "awards",
+    "accomplishments",
+    "honors",
+    "honors & awards",
+    "honors and awards",
+    "recognition",
+  ],
+};
+
+const createEmptySections = () => ({
+  summary: [],
+  skills: [],
+  experience: [],
+  projects: [],
+  education: [],
+  certifications: [],
+  training: [],
+  achievements: [],
+});
+
+const isLikelyHeading = (line) => line.length < 60;
+
+const detectSection = (normalizedLine) => {
+  if (!isLikelyHeading(normalizedLine)) return null;
+
+  for (const [section, aliases] of Object.entries(sectionAliases)) {
+    // exact match first (higher confidence)
+    if (aliases.includes(normalizedLine)) return section;
+  }
+
+  for (const [section, aliases] of Object.entries(sectionAliases)) {
+    // fuzzy match: alias is a substring of the heading line
+    if (aliases.some((alias) => normalizedLine.includes(alias))) return section;
+  }
+
+  return null;
+};
+
 const parseSections = (text) => {
+  // consistent empty return derived from createEmptySections so it never goes stale
   if (!text || typeof text !== "string") {
-    return {
-      skills: "",
-      experience: "",
-      projects: "",
-      education: ""
-    }
+    return Object.fromEntries(
+      Object.keys(createEmptySections()).map((k) => [k, ""])
+    );
   }
 
   const lines = text
     .split("\n")
-    .map(line => line.trim())
-    .filter(Boolean)
+    .map((line) => line.trim())
+    .filter(Boolean);
 
-  const sectionPatterns = {
-    skills: [/^skills$/i, /^technical skills$/i, /^skills & tools$/i],
-    experience: [/^experience$/i, /^work experience$/i, /^professional experience$/i],
-    projects: [/^projects$/i, /^personal projects$/i, /^relevant projects$/i],
-    education: [/^education$/i, /^academic background$/i]
-  }
+  const sections = createEmptySections();
+  const sectionOrder = []; // metadata: order sections appeared in
 
-  const sections = {
-    skills: [],
-    experience: [],
-    projects: [],
-    education: []
-  }
+  // default to summary so pre-heading content (name, contact) isn't silently dropped
+  let currentSection = "summary";
 
-  let currentSection = null
-
-  for (let line of lines) {
-    let matchedSection = null
-
-    for (let key in sectionPatterns) {
-      if (sectionPatterns[key].some(pattern => pattern.test(line))) {
-        matchedSection = key
-        break
-      }
-    }
+  for (const rawLine of lines) {
+    const normalizedLine = normalizeHeading(rawLine);
+    const matchedSection = detectSection(normalizedLine);
 
     if (matchedSection) {
-      currentSection = matchedSection
-      continue
+      if (!sectionOrder.includes(matchedSection)) {
+        sectionOrder.push(matchedSection);
+      }
+      currentSection = matchedSection;
+      continue;
     }
 
     if (currentSection) {
-      sections[currentSection].push(line)
+      sections[currentSection].push(rawLine);
     }
   }
 
-  return {
-    skills: sections.skills.join("\n"),
-    experience: sections.experience.join("\n"),
-    projects: sections.projects.join("\n"),
-    education: sections.education.join("\n")
-  }
-}
+  const result = Object.fromEntries(
+    Object.entries(sections).map(([key, value]) => [key, value.join("\n")])
+  );
 
-module.exports = parseSections
+  // attach section order as non-enumerable so it doesn't interfere with existing consumers
+  Object.defineProperty(result, "_sectionOrder", {
+    value: sectionOrder,
+    enumerable: false,
+    writable: false,
+  });
+
+  return result;
+};
+
+module.exports = parseSections;

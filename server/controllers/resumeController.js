@@ -7,6 +7,7 @@ const calculateResumeScore = require("../utils/resumeScorer");
 const generateFeedback = require("../utils/feedbackGenerator");
 const matchResumeToJD = require("../utils/jdMatcher");
 const normalizeSkills = require("../utils/skillNormalizer");
+const cleanResumeText = require("../utils/cleanResumeText");
 
 
 
@@ -19,12 +20,21 @@ exports.uploadResume = async (req, res) => {
 
     const data = await pdfParse(req.file.buffer)
 
-    const text = data.text.replace(/\r/g, "").trim()
+    const text = cleanResumeText(data.text);
 
     const sections = parseSections(text)
 
-    let skills = extractSkills(sections.skills);
-  skills = normalizeSkills(skills);
+    const skillSourceText = [
+      sections.skills || "",
+      sections.projects || "",
+      sections.experience || "",
+      sections.training || "",
+      sections.certifications || "",
+    ].join("\n");
+
+    let skills = extractSkills(skillSourceText);
+    skills = normalizeSkills(skills);
+ 
 
     const textToAnalyze =(sections.experience || "") + "\n" + (sections.projects || "");
 
@@ -35,16 +45,16 @@ exports.uploadResume = async (req, res) => {
     // console.log(sections.experience)
     
 
-    const wordCount = text.split(" ").length
+    const wordCount = text.split(/\s+/).filter(Boolean).length;
     const charCount = text.length
     const scoreData = calculateResumeScore({
-  total_bullets: quantification.total_bullets,
-  quantified_bullets: quantification.quantified_bullets,
-  skills,
-  wordCount,
-  textToAnalyze
-});
-
+      total_bullets: quantification.total_bullets,
+      quantified_bullets: quantification.   quantified_bullets,
+      skills,
+      wordCount,
+      textToAnalyze,
+      sections,
+    });
 let jdMatch = null;
 
 if (req.body && req.body.jobDescription && req.body.jobDescription.trim())  {
