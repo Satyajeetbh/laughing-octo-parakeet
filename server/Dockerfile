@@ -2,14 +2,17 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Install dependencies
-COPY package*.json ./
-RUN npm ci
+ENV NODE_ENV=production
 
-# Copy server code
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
+
 COPY . .
+
+RUN addgroup -g 1001 -S nodejs && adduser -S appuser -u 1001 -G nodejs
+
+USER appuser
 
 EXPOSE 5000
 
-# Start server
 CMD ["npm", "start"]
