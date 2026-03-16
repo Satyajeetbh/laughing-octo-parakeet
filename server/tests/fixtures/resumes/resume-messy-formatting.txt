@@ -1,0 +1,21 @@
+TECHNICAL SKILLS:
+JavaScript   React   Node.js   Express.js   MongoDB   Docker
+
+ACADEMIC PROJECTS
+Smart Attendance System
+•Built a MERN-based attendance platform for students and faculty
+•Implemented authentication, dashboard views, and API integration
+•Improved reporting workflow by 25%
+
+EMPLOYMENT HISTORY
+Software Engineering Intern
+•Worked with Next.js and Tailwind CSS on internal tools
+•Built reusable UI components and improved responsiveness
+
+CERTIFICATIONS
+AWS Cloud Practitioner
+Google Cloud Fundamentals
+
+EDUCATION
+Bachelor of Technology in Computer Science
+ABC University

@@ -1,0 +1,12 @@
+SKILLS
+JavaScript, TypeScript, React, Next.js, Node.js, Express.js, MongoDB, Docker, Git
+
+PROJECTS
+Resume Analyzer
+•Built a full-stack resume analyzer using Next.js, Express.js, and MongoDB.
+•Implemented drag-and-drop file upload and dashboard analytics.
+•Improved parsing reliability by adding structured section detection and skill normalization.
+
+EDUCATION
+Bachelor of Technology in Computer Science
+ABC University

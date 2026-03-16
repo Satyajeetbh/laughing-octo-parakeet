@@ -1,0 +1,16 @@
+SKILLS
+JavaScript, React, Node.js, PostgreSQL, Docker, AWS
+
+EXPERIENCE
+Backend Intern
+•Built APIs serving 10k+ monthly users.
+•Reduced response time by 35% through query optimization.
+•Improved deployment reliability and reduced failed releases by 40%.
+
+PROJECTS
+Analytics Dashboard
+•Developed a React dashboard used by 500+ internal users.
+•Integrated authentication and reporting workflows.
+
+EDUCATION
+Bachelor of Technology

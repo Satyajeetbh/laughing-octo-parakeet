@@ -1,0 +1,21 @@
+TECHNICAL SKILLS
+Python, Java, React, Tailwind CSS, Firebase, Kotlin
+
+PROJECTS
+Campus Event Platform
+•Built a responsive event platform using React and Firebase.
+•Implemented authentication and dashboard views for student clubs.
+
+CERTIFICATIONS
+AWS Cloud Practitioner
+Google Data Analytics Certificate
+Learn C++ Programming - Self-Paced
+
+TRAINING
+Android Development Bootcamp
+•Learned Kotlin, Firebase, and Jetpack Components.
+•Built small Android apps as part of guided training.
+
+EDUCATION
+B.Tech CSE
+XYZ University

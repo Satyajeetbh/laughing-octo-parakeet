@@ -1,0 +1,16 @@
+PROJECTS
+Stock Tracker
+•Built a stock tracking dashboard using Next.js, TypeScript, Chart.js, and REST APIs.
+•Integrated authentication and personalized alerts.
+
+Meme Generator
+•Developed a React app with Tailwind CSS for generating and downloading memes.
+•Implemented image upload and real-time preview.
+
+EXPERIENCE
+Software Intern
+•Built internal APIs using Node.js and Express.js.
+•Worked with MongoDB and Docker during deployment.
+
+EDUCATION
+B.Tech in Computer Science

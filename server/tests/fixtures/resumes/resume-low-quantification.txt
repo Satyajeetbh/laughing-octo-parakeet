@@ -1,0 +1,17 @@
+SKILLS
+JavaScript, React, Node.js, Express.js, MongoDB, Git
+
+PROJECTS
+Portfolio Website
+•Built a personal portfolio website using React and Tailwind CSS.
+•Designed responsive layouts and reusable components.
+•Added project showcase and contact form.
+
+Task Manager App
+•Developed a full-stack task management app with Node.js and MongoDB.
+•Implemented authentication and CRUD functionality.
+•Focused on clean UI and simple user experience.
+
+EDUCATION
+Bachelor of Technology in Computer Science
+XYZ University
