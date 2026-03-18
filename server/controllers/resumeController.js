@@ -1,105 +1,76 @@
-const pdfParse = require("pdf-parse")
-const parseSections = require("../utils/sectionParser")
-const extractSkills = require("../utils/skillExtractor")
-const detectQuantification = require("../utils/quantificationDetector");
 const Resume = require("../models/Resume");
-const calculateResumeScore = require("../utils/resumeScorer");
-const generateFeedback = require("../utils/feedbackGenerator");
-const matchResumeToJD = require("../utils/jdMatcher");
-const normalizeSkills = require("../utils/skillNormalizer");
-const cleanResumeText = require("../utils/cleanResumeText");
+const { enqueueResumeJob } = require("../services/resumeJobService");
 
-
-
-exports.uploadResume = async (req, res) => {
-    console.log("Received resume upload request")
+const uploadResume = async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ message: "No file uploaded" })
+      return res.status(400).json({ message: "No file uploaded" });
     }
 
-    const data = await pdfParse(req.file.buffer)
+    const jobDescription = req.body?.jobDescription || "";
 
-    const text = cleanResumeText(data.text);
-
-    const sections = parseSections(text)
-
-    const skillSourceText = [
-      sections.skills || "",
-      sections.projects || "",
-      sections.experience || "",
-      sections.training || "",
-      sections.certifications || "",
-    ].join("\n");
-
-    let skills = extractSkills(skillSourceText);
-    skills = normalizeSkills(skills);
- 
-
-    const textToAnalyze =(sections.experience || "") + "\n" + (sections.projects || "");
-
-    const quantification = detectQuantification(textToAnalyze);
-
-
-    
-    // console.log(sections.experience)
-    
-
-    const wordCount = text.split(/\s+/).filter(Boolean).length;
-    const charCount = text.length
-    const scoreData = calculateResumeScore({
-      total_bullets: quantification.total_bullets,
-      quantified_bullets: quantification.   quantified_bullets,
-      skills,
-      wordCount,
-      textToAnalyze,
-      sections,
+    const queuedJob = await enqueueResumeJob({
+      userId: req.user.id,
+      file: req.file,
+      jobDescription,
     });
-let jdMatch = null;
 
-if (req.body && req.body.jobDescription && req.body.jobDescription.trim())  {
-  jdMatch = matchResumeToJD(
-    skills,
-    req.body.jobDescription
-  );
-}
-let finalScore = scoreData.totalScore;
-
-if (jdMatch) {
-  finalScore = Math.round(
-    scoreData.totalScore * 0.7 +
-    jdMatch.matchPercentage * 0.3
-  );
-}
-  const feedback = generateFeedback({
-  scoreBreakdown: scoreData.breakdown,
-  quantification,
-  wordCount
-});
-
-  const savedResume = await Resume.create({
-  user: req.user.id,
-  wordCount,
-  charCount,
-  skills,
-  quantification,
-  resumeScore: scoreData.totalScore,
-  scoreBreakdown: scoreData.breakdown,
-  sections,
-  feedback,
-  jdMatch,
-  finalScore,
-});
-
-return res.status(200).json(savedResume);
-    
+    return res.status(202).json({
+      message: "Resume queued for processing",
+      resumeId: queuedJob.resumeId,
+      jobId: queuedJob.jobId,
+      processingStatus: queuedJob.processingStatus,
+    });
   } catch (error) {
     return res.status(500).json({
-      message: "Error processing resume",
-      error: error.message
-    })
+      message: "Failed to queue resume analysis",
+      error: error.message,
+    });
   }
-  
-}
+};
 
+const getResumeStatus = async (req, res) => {
+  try {
+    const resume = await Resume.findOne({
+      _id: req.params.id,
+      user: req.user.id,
+    }).select("processingStatus errorMessage processedAt finalScore");
 
+    if (!resume) {
+      return res.status(404).json({ message: "Resume not found" });
+    }
+
+    return res.status(200).json(resume);
+  } catch (error) {
+    return res.status(500).json({
+      message: "Failed to fetch resume status",
+      error: error.message,
+    });
+  }
+};
+
+const getResumeResult = async (req, res) => {
+  try {
+    const resume = await Resume.findOne({
+      _id: req.params.id,
+      user: req.user.id,
+    });
+
+    if (!resume) {
+      return res.status(404).json({ message: "Resume not found" });
+    }
+
+    return res.status(200).json(resume);
+  } catch (error) {
+    return res.status(500).json({
+      message: "Failed to fetch resume result",
+      error: error.message,
+    });
+  }
+};
+
+module.exports = {
+  uploadResume,
+  getResumeStatus,
+  getResumeResult,
+};

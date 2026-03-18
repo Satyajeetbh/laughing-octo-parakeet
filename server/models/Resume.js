@@ -21,12 +21,14 @@ const resumeSchema = new mongoose.Schema(
     default: 0
     },
     scoreBreakdown: {
-    bulletScore: Number,
-    quantScore: Number,
-    skillsScore: Number,
-    actionScore: Number,
-    lengthScore: Number
-    },
+    sectionCompletenessScore: { type: Number, default: 0 },
+    technicalSkillScore: { type: Number, default: 0 },
+    bulletStructureScore: { type: Number, default: 0 },
+    quantifiedImpactScore: { type: Number, default: 0 },
+    actionVerbScore: { type: Number, default: 0 },
+    lengthScore: { type: Number, default: 0 },
+    projectExperienceTechScore: { type: Number, default: 0 },
+  },
     feedback: {
     strengths: [String],
     improvements: [String]
@@ -41,6 +43,31 @@ const resumeSchema = new mongoose.Schema(
       type: Map,
       of: String,
     },
+    processingStatus: {
+    type: String,
+    enum: ["queued", "processing", "completed", "failed"],
+  default: "queued",
+},
+jobId: {
+  type: String,
+  default: null,
+},
+errorMessage: {
+  type: String,
+  default: null,
+},
+processedAt: {
+  type: Date,
+  default: null,
+},
+fileName: {
+  type: String,
+  default: "",
+},
+extractedText: {
+  type: String,
+  default: "",
+},
   },
   { timestamps: true }
 );

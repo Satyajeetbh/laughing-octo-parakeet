@@ -1,29 +1,27 @@
-const express = require("express")
-const multer = require("multer")
-const { uploadResume } = require("../controllers/resumeController")
-const {protect} = require("../middleware/authMiddleware")
+const express = require("express");
+const multer = require("multer");
+const { protect } = require("../middleware/authMiddleware");
+const {
+  uploadResume,
+  getResumeStatus,
+  getResumeResult,
+} = require("../controllers/resumeController");
 
-const router = express.Router()
-
-const storage = multer.memoryStorage()
+const router = express.Router();
 
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
-    if (file.mimetype === "application/pdf") {
-      cb(null, true)
-    } else {
-      cb(new Error("Only PDF files are allowed"))
+    if (file.mimetype !== "application/pdf") {
+      return cb(new Error("Only PDF files are allowed"));
     }
-  }
-})
+    cb(null, true);
+  },
+});
 
-router.post(
-  "/upload",
-  protect,
-  upload.single("resume"),
-  uploadResume
-)
+router.post("/upload", protect, upload.single("resume"), uploadResume);
+router.get("/:id/status", protect, getResumeStatus);
+router.get("/:id", protect, getResumeResult);
 
 module.exports = router;
