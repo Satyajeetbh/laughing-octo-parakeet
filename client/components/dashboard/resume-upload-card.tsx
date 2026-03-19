@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-
 import {
   Card,
   CardContent,
@@ -8,6 +7,7 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { FileText, UploadCloud, X } from "lucide-react";
 
 type Props = {
@@ -18,6 +18,8 @@ type Props = {
   clearFile: () => void;
 };
 
+const MAX_FILE_SIZE_MB = 5;
+
 export default function ResumeUploadCard({
   file,
   loading,
@@ -26,38 +28,65 @@ export default function ResumeUploadCard({
   clearFile,
 }: Props) {
   const [dragActive, setDragActive] = useState(false);
+  const [fileError, setFileError] = useState("");
+
+  const validateFile = (selectedFile: File | null) => {
+    if (!selectedFile) return false;
+
+    if (selectedFile.type !== "application/pdf") {
+      setFileError("Only PDF files are allowed.");
+      return false;
+    }
+
+    if (selectedFile.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+      setFileError(`File size must be under ${MAX_FILE_SIZE_MB} MB.`);
+      return false;
+    }
+
+    setFileError("");
+    return true;
+  };
+
+  const handleSelectedFile = (selectedFile: File | null) => {
+    if (!selectedFile) return;
+
+    if (!validateFile(selectedFile)) {
+      onFileChange(null);
+      return;
+    }
+
+    onFileChange(selectedFile);
+  };
+
   const handleDragOver = (e: React.DragEvent) => {
-  e.preventDefault();
-  setDragActive(true);
-};
+    e.preventDefault();
+    setDragActive(true);
+  };
 
-const handleDragLeave = () => {
-  setDragActive(false);
-};
+  const handleDragLeave = () => {
+    setDragActive(false);
+  };
 
-const handleDrop = (e: React.DragEvent) => {
-  e.preventDefault();
-  setDragActive(false);
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragActive(false);
 
-  const droppedFile = e.dataTransfer.files?.[0];
+    const droppedFile = e.dataTransfer.files?.[0] || null;
+    handleSelectedFile(droppedFile);
+  };
 
-  if (!droppedFile) return;
+  const handleClearFile = () => {
+    setFileError("");
+    clearFile();
+  };
 
-  if (droppedFile.type !== "application/pdf") {
-    alert("Only PDF files are allowed");
-    return;
-  }
+  const formatFileSize = (size: number) => {
+    if (size < 1024 * 1024) {
+      return `${(size / 1024).toFixed(0)} KB`;
+    }
 
-  onFileChange(droppedFile);
-};
-
-const formatFileSize = (size: number) => {
-  if (size < 1024 * 1024) {
-    return `${(size / 1024).toFixed(0)} KB`;
-  }
-
-  return `${(size / (1024 * 1024)).toFixed(2)} MB`;
-};
+    return `${(size / (1024 * 1024)).toFixed(2)} MB`;
+  };
 
   return (
     <Card className="rounded-3xl border-border shadow-sm">
@@ -74,16 +103,15 @@ const formatFileSize = (size: number) => {
       <CardContent>
         <form onSubmit={onSubmit} className="space-y-6">
           <label
-  onDragOver={handleDragOver}
-  onDragLeave={handleDragLeave}
-  onDrop={handleDrop}
-  className={`flex cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed px-6 py-14 text-center transition
-  ${
-    dragActive
-      ? "border-primary bg-primary/10"
-      : "border-border bg-muted/30 hover:bg-muted"
-  }`}
->
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            className={`flex cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed px-6 py-14 text-center transition ${
+              dragActive
+                ? "border-primary bg-primary/10"
+                : "border-border bg-muted/30 hover:bg-muted"
+            } ${loading ? "pointer-events-none opacity-70" : ""}`}
+          >
             <UploadCloud className="mb-4 h-10 w-10 text-primary" />
 
             <span className="text-base font-semibold text-foreground">
@@ -95,18 +123,25 @@ const formatFileSize = (size: number) => {
             </span>
 
             <span className="mt-1 text-xs text-muted-foreground">
-              PDF only
+              PDF only • Max {MAX_FILE_SIZE_MB} MB
             </span>
 
             <input
               type="file"
               accept=".pdf"
               className="hidden"
+              disabled={loading}
               onChange={(e) =>
-                onFileChange(e.target.files ? e.target.files[0] : null)
+                handleSelectedFile(e.target.files ? e.target.files[0] : null)
               }
             />
           </label>
+
+          {fileError && (
+            <Alert variant="destructive">
+              <AlertDescription>{fileError}</AlertDescription>
+            </Alert>
+          )}
 
           {file && (
             <div className="flex items-start justify-between gap-4 rounded-xl border border-border bg-background px-4 py-3">
@@ -116,24 +151,34 @@ const formatFileSize = (size: number) => {
                   <p className="text-sm font-medium text-foreground">Selected file</p>
                   <p className="mt-1 break-all text-sm text-muted-foreground">
                     {file.name} • {formatFileSize(file.size)}
-
                   </p>
                 </div>
               </div>
 
-              <Button type="button" variant="ghost" size="icon" onClick={clearFile}>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={handleClearFile}
+                disabled={loading}
+              >
                 <X className="h-4 w-4" />
               </Button>
             </div>
           )}
 
           <div className="flex flex-col gap-3 sm:flex-row">
-            <Button type="submit" disabled={loading} className="sm:w-auto">
+            <Button type="submit" disabled={loading || !file} className="sm:w-auto">
               {loading ? "Analyzing..." : "Upload Resume"}
             </Button>
 
             {file && (
-              <Button type="button" variant="outline" onClick={clearFile}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleClearFile}
+                disabled={loading}
+              >
                 Clear file
               </Button>
             )}

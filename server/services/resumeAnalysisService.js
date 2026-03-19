@@ -89,7 +89,7 @@ async function processResumeAnalysis({
       errorMessage: null,
       processedAt: new Date(),
     },
-    { new: true }
+    { returnDocument: "after" }
   );
 
   if (!updatedResume) {

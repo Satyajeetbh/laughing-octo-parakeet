@@ -39,7 +39,7 @@ export default function RegisterPage() {
           <div className="hidden flex-col justify-between bg-foreground p-10 text-background md:flex">
             <div>
               <p className="text-sm font-medium uppercase tracking-[0.2em] text-background/70">
-                Placement Intel
+                ResumeIntel
               </p>
               <h1 className="mt-6 text-4xl font-bold leading-tight">
                 Build a stronger profile with actual feedback.

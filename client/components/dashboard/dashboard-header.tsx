@@ -26,7 +26,7 @@ export default function DashboardHeader({ name, onLogout }: Props) {
         </div>
 
         <Badge variant="secondary" className="w-fit rounded-full px-3 py-1">
-          Placement Intel
+          ResumeIntel
         </Badge>
       </div>
 

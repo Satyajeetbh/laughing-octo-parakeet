@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 
 import DashboardHeader from "@/components/dashboard/dashboard-header";
@@ -53,8 +52,7 @@ type ResumeResult = {
 };
 
 export default function DashboardPage() {
-  const { user, logout } = useAuth();
-  const router = useRouter();
+  const { user, logout, isAuthLoading } = useAuth();
 
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState<ResumeResult | null>(null);
@@ -65,11 +63,7 @@ export default function DashboardPage() {
     "idle" | "uploading" | "queued" | "processing" | "completed" | "failed"
   >("idle");
 
-  useEffect(() => {
-    if (!user) {
-      router.push("/login");
-    }
-  }, [user, router]);
+
 
   const getResumeStrength = () => {
   if (!result) return null;
@@ -209,7 +203,8 @@ export default function DashboardPage() {
 
   const strength = getResumeStrength();
 
-  if (!user) return null;
+
+if (!user) return null;
 
   return (
     <main className="min-h-screen bg-background px-6 py-8">

@@ -37,7 +37,7 @@ export default function LoginPage() {
           <div className="hidden flex-col justify-between bg-primary p-10 text-primary-foreground md:flex">
             <div>
               <p className="text-sm font-medium uppercase tracking-[0.2em] text-primary-foreground/80">
-                Placement Intel
+                ResumeIntel
               </p>
               <h1 className="mt-6 text-4xl font-bold leading-tight">
                 Know what your resume is really saying.
