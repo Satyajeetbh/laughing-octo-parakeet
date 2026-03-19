@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useAuth } from "../../context/AuthContext";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useAuth } from "@/context/AuthContext";
+import { useResumeAnalysis } from "@/hooks/useResumeAnalysis";
 
 import DashboardHeader from "@/components/dashboard/dashboard-header";
 import ResumeUploadCard from "@/components/dashboard/resume-upload-card";
@@ -11,200 +12,54 @@ import SkillsCard from "@/components/dashboard/skills-card";
 import SectionsCard from "@/components/dashboard/sections-card";
 import ResumeScoreCard from "@/components/dashboard/resume-score-card";
 import QuantificationChartCard from "@/components/dashboard/quantification-chart-card";
-
-import { Alert, AlertDescription } from "@/components/ui/alert";
-
-type UploadResponse = {
-  message: string;
-  resumeId: string;
-  jobId: string;
-  processingStatus: "queued" | "processing" | "completed" | "failed";
-};
-
-type ResumeResult = {
-  wordCount: number;
-  charCount: number;
-  skills: string[];
-  quantification: {
-    total_bullets: number;
-    quantified_bullets: number;
-    percentage_mentions: number;
-    number_mentions: number;
-  };
-  sections: Record<string, string>;
-  resumeScore: number;
-  finalScore: number;
-  scoreBreakdown: {
-    sectionCompletenessScore: number;
-    technicalSkillScore: number;
-    bulletStructureScore: number;
-    quantifiedImpactScore: number;
-    actionVerbScore: number;
-    lengthScore: number;
-    projectExperienceTechScore: number;
-  };
-  feedback: {
-    strengths: string[];
-    improvements: string[];
-  };
-  processingStatus?: "queued" | "processing" | "completed" | "failed";
-  errorMessage?: string | null;
-};
+import ResumeHistoryCard from "@/components/dashboard/resume-history-card";
 
 export default function DashboardPage() {
-  const { user, logout, isAuthLoading } = useAuth();
+  const { user, logout } = useAuth();
 
-  const [file, setFile] = useState<File | null>(null);
-  const [result, setResult] = useState<ResumeResult | null>(null);
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [resumeId, setResumeId] = useState("");
-  const [processingStatus, setProcessingStatus] = useState<
-    "idle" | "uploading" | "queued" | "processing" | "completed" | "failed"
-  >("idle");
-
-
+  const {
+  file,
+  setFile,
+  clearSelectedFile,
+  result,
+  error,
+  loading,
+  resumeId,
+  processingStatus,
+  history,
+  historyLoading,
+  handleUpload,
+  loadResumeFromHistory,
+} = useResumeAnalysis(user);
 
   const getResumeStrength = () => {
-  if (!result) return null;
+    if (!result) return null;
 
-  const score = result.resumeScore;
+    const score = result.resumeScore;
 
-  if (score >= 75) {
+    if (score >= 75) {
+      return {
+        label: "Strong structure",
+        variant: "default" as const,
+      };
+    }
+
+    if (score >= 50) {
+      return {
+        label: "Decent foundation",
+        variant: "secondary" as const,
+      };
+    }
+
     return {
-      label: "Strong structure",
-      variant: "default" as const,
+      label: "Needs work",
+      variant: "outline" as const,
     };
-  }
-
-  if (score >= 50) {
-    return {
-      label: "Decent foundation",
-      variant: "secondary" as const,
-    };
-  }
-
-  return {
-    label: "Needs work",
-    variant: "outline" as const,
-  };
-};
-
-  const fetchResumeResult = async (id: string) => {
-    if (!user) return;
-
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/resume/${id}`,
-      {
-        headers: {
-          Authorization: `Bearer ${user.token}`,
-        },
-      }
-    );
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      throw new Error(data.message || "Failed to fetch resume result");
-    }
-
-    setResult(data);
-    setProcessingStatus("completed");
-  };
-
-  const pollResumeStatus = (id: string) => {
-    const interval = setInterval(async () => {
-      try {
-        if (!user) {
-          clearInterval(interval);
-          return;
-        }
-
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/resume/${id}/status`,
-          {
-            headers: {
-              Authorization: `Bearer ${user.token}`,
-            },
-          }
-        );
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          throw new Error(data.message || "Failed to fetch status");
-        }
-
-        setProcessingStatus(data.processingStatus);
-
-        if (data.processingStatus === "completed") {
-          clearInterval(interval);
-          await fetchResumeResult(id);
-        }
-
-        if (data.processingStatus === "failed") {
-          clearInterval(interval);
-          setError(data.errorMessage || "Resume processing failed");
-          setProcessingStatus("failed");
-        }
-      } catch (err: any) {
-        clearInterval(interval);
-        setError(err.message || "Status polling failed");
-        setProcessingStatus("failed");
-      }
-    }, 2500);
-  };
-
-  const handleUpload = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!file || !user) {
-      setError("Please select a resume file");
-      return;
-    }
-
-    setError("");
-    setLoading(true);
-    setResult(null);
-    setResumeId("");
-    setProcessingStatus("uploading");
-
-    try {
-      const formData = new FormData();
-      formData.append("resume", file);
-
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/resume/upload`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${user.token}`,
-          },
-          body: formData,
-        }
-      );
-
-      const data: UploadResponse = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || "Upload failed");
-      }
-
-      setResumeId(data.resumeId);
-      setProcessingStatus(data.processingStatus);
-      pollResumeStatus(data.resumeId);
-    } catch (err: any) {
-      setError(err.message || "Something went wrong");
-      setProcessingStatus("failed");
-    } finally {
-      setLoading(false);
-    }
   };
 
   const strength = getResumeStrength();
 
-
-if (!user) return null;
+  if (!user) return null;
 
   return (
     <main className="min-h-screen bg-background px-6 py-8">
@@ -214,7 +69,7 @@ if (!user) return null;
         <section className="grid gap-4 md:grid-cols-3">
           <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
             <p className="text-sm text-muted-foreground">Signed in as</p>
-            <p className="mt-1 font-medium text-foreground break-all">
+            <p className="mt-1 break-all font-medium text-foreground">
               {user.email}
             </p>
           </div>
@@ -250,7 +105,15 @@ if (!user) return null;
           loading={loading}
           onFileChange={setFile}
           onSubmit={handleUpload}
-          clearFile={() => setFile(null)}
+          clearFile={clearSelectedFile}
+        />
+
+        <ResumeHistoryCard
+          history={history}
+          historyLoading={historyLoading}
+          actionLoading={loading}
+          activeResumeId={resumeId}
+          onOpenResume={loadResumeFromHistory}
         />
 
         {error && (

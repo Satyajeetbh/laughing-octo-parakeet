@@ -69,8 +69,24 @@ const getResumeResult = async (req, res) => {
   }
 };
 
+const getResumeHistory = async (req, res) => {
+  try {
+    const resumes = await Resume.find({ user: req.user.id })
+      .select("fileName processingStatus finalScore processedAt createdAt updatedAt")
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json(resumes);
+  } catch (error) {
+    return res.status(500).json({
+      message: "Failed to fetch resume history",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   uploadResume,
   getResumeStatus,
   getResumeResult,
+  getResumeHistory,
 };

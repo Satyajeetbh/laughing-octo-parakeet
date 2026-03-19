@@ -5,6 +5,7 @@ const {
   uploadResume,
   getResumeStatus,
   getResumeResult,
+  getResumeHistory,
 } = require("../controllers/resumeController");
 
 const router = express.Router();
@@ -21,7 +22,9 @@ const upload = multer({
 });
 
 router.post("/upload", protect, upload.single("resume"), uploadResume);
+router.get("/", protect, getResumeHistory);
 router.get("/:id/status", protect, getResumeStatus);
 router.get("/:id", protect, getResumeResult);
+
 
 module.exports = router;
