@@ -13,6 +13,9 @@ import SectionsCard from "@/components/dashboard/sections-card";
 import ResumeScoreCard from "@/components/dashboard/resume-score-card";
 import QuantificationChartCard from "@/components/dashboard/quantification-chart-card";
 import ResumeHistoryCard from "@/components/dashboard/resume-history-card";
+import FeedbackCard from "@/components/dashboard/feedback-card";
+import JDMatchCard from "@/components/dashboard/jd-match-card";
+import { getResumeStrength } from "@/lib/getResumeStrength";
 
 export default function DashboardPage() {
   const { user, logout } = useAuth();
@@ -23,7 +26,8 @@ export default function DashboardPage() {
   clearSelectedFile,
   result,
   error,
-  loading,
+  isUploading,
+  isOpeningHistory,
   resumeId,
   processingStatus,
   history,
@@ -32,32 +36,7 @@ export default function DashboardPage() {
   loadResumeFromHistory,
 } = useResumeAnalysis(user);
 
-  const getResumeStrength = () => {
-    if (!result) return null;
-
-    const score = result.resumeScore;
-
-    if (score >= 75) {
-      return {
-        label: "Strong structure",
-        variant: "default" as const,
-      };
-    }
-
-    if (score >= 50) {
-      return {
-        label: "Decent foundation",
-        variant: "secondary" as const,
-      };
-    }
-
-    return {
-      label: "Needs work",
-      variant: "outline" as const,
-    };
-  };
-
-  const strength = getResumeStrength();
+  const strength = getResumeStrength(result?.resumeScore);
 
   if (!user) return null;
 
@@ -78,8 +57,10 @@ export default function DashboardPage() {
             <p className="text-sm text-muted-foreground">Status</p>
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <span className="font-medium text-foreground">
-                {loading
+                {isUploading
                   ? "Uploading..."
+                  : isOpeningHistory
+                  ? "Opening saved result..."
                   : processingStatus === "queued"
                   ? "Queued for processing"
                   : processingStatus === "processing"
@@ -102,7 +83,7 @@ export default function DashboardPage() {
 
         <ResumeUploadCard
           file={file}
-          loading={loading}
+          loading={isUploading}
           onFileChange={setFile}
           onSubmit={handleUpload}
           clearFile={clearSelectedFile}
@@ -111,7 +92,7 @@ export default function DashboardPage() {
         <ResumeHistoryCard
           history={history}
           historyLoading={historyLoading}
-          actionLoading={loading}
+          actionLoading={isOpeningHistory}
           activeResumeId={resumeId}
           onOpenResume={loadResumeFromHistory}
         />
@@ -124,6 +105,34 @@ export default function DashboardPage() {
 
         {result && (
           <>
+          {result.jdMatch && (
+  <JDMatchCard
+    matchPercentage={result.jdMatch.matchPercentage}
+    matchedKeywords={result.jdMatch.matchedKeywords}
+    missingKeywords={result.jdMatch.missingKeywords}
+  />
+)}
+          
+          <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+  <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+    <div>
+      <p className="text-sm text-muted-foreground">Current Analysis</p>
+      <h2 className="text-2xl font-bold text-foreground">
+        Final Score: {result.finalScore}
+      </h2>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Resume score: {result.resumeScore} • Skills detected: {result.skills.length}
+      </p>
+    </div>
+
+    {strength && (
+      <Badge variant={strength.variant} className="rounded-full">
+        {strength.label}
+      </Badge>
+    )}
+  </div>
+</div>
+
             <StatsGrid
               wordCount={result.wordCount}
               charCount={result.charCount}
@@ -144,6 +153,19 @@ export default function DashboardPage() {
                 numberMentions={result.quantification.number_mentions}
               />
             </div>
+            <div className="grid gap-6 lg:grid-cols-2">
+  <FeedbackCard
+    title="Strengths"
+    description="What your resume is already doing well."
+    items={result.feedback.strengths}
+  />
+
+  <FeedbackCard
+    title="Improvements"
+    description="Where the resume can be made stronger."
+    items={result.feedback.improvements}
+  />
+</div>
 
             <div className="grid gap-6 lg:grid-cols-2">
               <SectionsCard sections={Object.keys(result.sections)} />

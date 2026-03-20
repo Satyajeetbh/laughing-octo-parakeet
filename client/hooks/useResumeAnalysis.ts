@@ -29,7 +29,8 @@ export function useResumeAnalysis(user: AuthUser | null) {
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState<ResumeResult | null>(null);
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+const [isOpeningHistory, setIsOpeningHistory] = useState(false);
   const [resumeId, setResumeId] = useState("");
   const [processingStatus, setProcessingStatus] =
     useState<ProcessingStatus>("idle");
@@ -147,7 +148,7 @@ export function useResumeAnalysis(user: AuthUser | null) {
     }
 
     setError("");
-    setLoading(true);
+    setIsUploading(true);
     setResult(null);
     setResumeId("");
     setProcessingStatus("uploading");
@@ -178,7 +179,7 @@ export function useResumeAnalysis(user: AuthUser | null) {
       setError(err.message || "Something went wrong");
       setProcessingStatus("failed");
     } finally {
-      setLoading(false);
+      setIsUploading(false);
     }
   };
 
@@ -187,18 +188,24 @@ export function useResumeAnalysis(user: AuthUser | null) {
 
   try {
     setError("");
-    setLoading(true);
+    setIsOpeningHistory(true);
     await fetchResumeResult(id);
   } catch (err: any) {
     setError(err.message || "Failed to open resume result");
   } finally {
-    setLoading(false);
+    setIsOpeningHistory(false);
   }
 };
 
   const clearSelectedFile = () => {
     setFile(null);
   };
+
+  useEffect(() => {
+  return () => {
+    clearPolling();
+  };
+}, []);
 
   useEffect(() => {
     if (user) {
@@ -212,7 +219,8 @@ export function useResumeAnalysis(user: AuthUser | null) {
     clearSelectedFile,
     result,
     error,
-    loading,
+    isUploading,
+    isOpeningHistory,
     resumeId,
     processingStatus,
     history,

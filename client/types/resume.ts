@@ -26,6 +26,11 @@ export type ResumeResult = {
   };
   processingStatus?: "queued" | "processing" | "completed" | "failed";
   errorMessage?: string | null;
+  jdMatch?: {
+  matchPercentage: number;
+  matchedKeywords: string[];
+  missingKeywords: string[];
+} | null;
 };
 
 export type ResumeHistoryItem = {
