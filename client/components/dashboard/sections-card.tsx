@@ -1,5 +1,18 @@
 import { Badge } from "@/components/ui/badge";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
+
+function formatSectionLabel(section: string) {
+  return section
+    .split(/[_\s]+/)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
 
 export default function SectionsCard({ sections }: { sections: string[] }) {
   return (
@@ -7,16 +20,16 @@ export default function SectionsCard({ sections }: { sections: string[] }) {
       <CardHeader>
         <CardTitle>Detected Sections</CardTitle>
         <CardDescription>
-          Sections identified in the resume.
+          Sections actually found in the resume content.
         </CardDescription>
       </CardHeader>
 
       <CardContent>
         <div className="flex flex-wrap gap-2">
           {sections.length > 0 ? (
-            sections.map((s, i) => (
-              <Badge key={i} variant="secondary">
-                {s}
+            sections.map((section) => (
+              <Badge key={section} variant="secondary">
+                {formatSectionLabel(section)}
               </Badge>
             ))
           ) : (

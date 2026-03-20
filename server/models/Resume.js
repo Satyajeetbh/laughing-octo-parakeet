@@ -43,6 +43,10 @@ const resumeSchema = new mongoose.Schema(
       type: Map,
       of: String,
     },
+    sectionOrder: {
+      type: [String],
+      default: [],
+    },
     processingStatus: {
     type: String,
     enum: ["queued", "processing", "completed", "failed"],

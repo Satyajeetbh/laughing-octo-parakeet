@@ -9,6 +9,7 @@ export type ResumeResult = {
     number_mentions: number;
   };
   sections: Record<string, string>;
+  sectionOrder?: string[];
   resumeScore: number;
   finalScore: number;
   scoreBreakdown: {

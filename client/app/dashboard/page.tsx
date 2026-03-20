@@ -36,7 +36,15 @@ export default function DashboardPage() {
   loadResumeFromHistory,
 } = useResumeAnalysis(user);
 
-  const strength = getResumeStrength(result?.resumeScore);
+  const detectedSections = result
+  ? Array.isArray(result.sectionOrder) && result.sectionOrder.length > 0
+    ? result.sectionOrder
+    : Object.entries(result.sections)
+        .filter(([, value]) => typeof value === "string" && value.trim().length > 0)
+        .map(([key]) => key)
+  : [];
+
+const strength = getResumeStrength(result?.finalScore);
 
   if (!user) return null;
 
@@ -137,14 +145,14 @@ export default function DashboardPage() {
               wordCount={result.wordCount}
               charCount={result.charCount}
               skillsCount={result.skills.length}
-              sectionsCount={Object.keys(result.sections).length}
+              sectionsCount={detectedSections.length}
             />
 
             <div className="grid gap-6 lg:grid-cols-2">
               <ResumeScoreCard
-                resumeScore={result.resumeScore}
-                scoreBreakdown={result.scoreBreakdown}
-              />
+  resumeScore={result.resumeScore}
+  scoreBreakdown={result.scoreBreakdown}
+/>
 
               <QuantificationChartCard
                 totalBullets={result.quantification.total_bullets}
@@ -168,7 +176,7 @@ export default function DashboardPage() {
 </div>
 
             <div className="grid gap-6 lg:grid-cols-2">
-              <SectionsCard sections={Object.keys(result.sections)} />
+              <SectionsCard sections={detectedSections} />
               <SkillsCard skills={result.skills} />
             </div>
           </>

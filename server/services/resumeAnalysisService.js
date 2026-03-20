@@ -20,6 +20,8 @@ async function processResumeAnalysis({
 
   const text = cleanResumeText(data.text || "");
   const sections = parseSections(text);
+  const sectionOrder = sections._sectionOrder || [];
+  delete sections._sectionOrder;
 
   const skillSourceText = [
     sections.skills || "",
@@ -82,6 +84,7 @@ async function processResumeAnalysis({
       resumeScore: scoreData.totalScore,
       scoreBreakdown: scoreData.breakdown,
       sections,
+      sectionOrder,
       feedback,
       jdMatch,
       finalScore,

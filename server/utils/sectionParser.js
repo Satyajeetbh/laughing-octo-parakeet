@@ -106,19 +106,41 @@ const createEmptySections = () => ({
   achievements: [],
 });
 
-const isLikelyHeading = (line) => line.length < 60;
+const isLikelyHeading = (line, rawLine = "") => {
+  if (!line || line.length > 50) return false;
 
-const detectSection = (normalizedLine) => {
-  if (!isLikelyHeading(normalizedLine)) return null;
+  const wordCount = line.split(/\s+/).filter(Boolean).length;
+  if (wordCount > 4) return false;
+
+  const trimmedRaw = rawLine.trim();
+  const isMostlyUppercase =
+    trimmedRaw &&
+    trimmedRaw === trimmedRaw.toUpperCase() &&
+    /[A-Z]/.test(trimmedRaw);
+
+  const hasBulletLikeStart = /^[•\-*]/.test(trimmedRaw);
+  if (hasBulletLikeStart) return false;
+
+  return isMostlyUppercase || wordCount <= 3;
+};
+
+const detectSection = (normalizedLine, rawLine) => {
+  if (!isLikelyHeading(normalizedLine, rawLine)) return null;
 
   for (const [section, aliases] of Object.entries(sectionAliases)) {
-    // exact match first (higher confidence)
     if (aliases.includes(normalizedLine)) return section;
   }
 
   for (const [section, aliases] of Object.entries(sectionAliases)) {
-    // fuzzy match: alias is a substring of the heading line
-    if (aliases.some((alias) => normalizedLine.includes(alias))) return section;
+    if (
+      aliases.some(
+        (alias) =>
+          normalizedLine.startsWith(alias) &&
+          normalizedLine.length <= alias.length + 12
+      )
+    ) {
+      return section;
+    }
   }
 
   return null;
@@ -141,11 +163,11 @@ const parseSections = (text) => {
   const sectionOrder = []; // metadata: order sections appeared in
 
   // default to summary so pre-heading content (name, contact) isn't silently dropped
-  let currentSection = "summary";
+  let currentSection = null;;
 
   for (const rawLine of lines) {
     const normalizedLine = normalizeHeading(rawLine);
-    const matchedSection = detectSection(normalizedLine);
+    const matchedSection = detectSection(normalizedLine, rawLine);
 
     if (matchedSection) {
       if (!sectionOrder.includes(matchedSection)) {
@@ -155,9 +177,9 @@ const parseSections = (text) => {
       continue;
     }
 
-    if (currentSection) {
-      sections[currentSection].push(rawLine);
-    }
+    if (currentSection && sections[currentSection]) {
+  sections[currentSection].push(rawLine);
+}
   }
 
   const result = Object.fromEntries(
@@ -165,11 +187,7 @@ const parseSections = (text) => {
   );
 
   // attach section order as non-enumerable so it doesn't interfere with existing consumers
-  Object.defineProperty(result, "_sectionOrder", {
-    value: sectionOrder,
-    enumerable: false,
-    writable: false,
-  });
+  result._sectionOrder = sectionOrder;
 
   return result;
 };

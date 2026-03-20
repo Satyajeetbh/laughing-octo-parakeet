@@ -20,24 +20,28 @@ type ScoreBreakdown = {
 
 type Props = {
   resumeScore: number;
+  finalScore?: number;
   scoreBreakdown: ScoreBreakdown;
 };
 
 export default function ResumeScoreCard({
   resumeScore,
+  finalScore,
   scoreBreakdown,
 }: Props) {
+  const displayScore = typeof finalScore === "number" ? finalScore : resumeScore;
+
   const getLabel = () => {
-    if (resumeScore >= 75) {
-      return { text: "Strong structure", variant: "default" as const };
-    }
+  if (displayScore >= 75) {
+    return { text: "Strong resume", variant: "default" as const };
+  }
 
-    if (resumeScore >= 50) {
-      return { text: "Decent foundation", variant: "secondary" as const };
-    }
+  if (displayScore >= 50) {
+    return { text: "Decent foundation", variant: "secondary" as const };
+  }
 
-    return { text: "Needs work", variant: "outline" as const };
-  };
+  return { text: "Needs work", variant: "outline" as const };
+};
 
   const label = getLabel();
 
@@ -62,9 +66,11 @@ export default function ResumeScoreCard({
         <div className="rounded-2xl border border-border bg-muted/30 p-5">
           <div className="flex items-end justify-between gap-4">
             <div>
-              <p className="text-sm text-muted-foreground">Overall score</p>
+              <p className="text-sm text-muted-foreground">
+                {typeof finalScore === "number" ? "Final score" : "Resume score"}
+              </p>
               <p className="mt-2 text-4xl font-bold text-foreground">
-                {resumeScore}/100
+                {displayScore}/100
               </p>
             </div>
             <p className="text-sm text-muted-foreground">
@@ -72,7 +78,7 @@ export default function ResumeScoreCard({
             </p>
           </div>
 
-          <Progress value={resumeScore} className="mt-4 h-3" />
+          <Progress value={displayScore} className="mt-4 h-3" />
         </div>
 
         <div className="grid gap-4">
