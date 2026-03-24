@@ -150,8 +150,9 @@ const strength = getResumeStrength(result?.finalScore);
 
             <div className="grid gap-6 lg:grid-cols-2">
               <ResumeScoreCard
-  resumeScore={result.resumeScore}
-  scoreBreakdown={result.scoreBreakdown}
+                resumeScore={result.resumeScore}
+                finalScore={result.finalScore}
+                scoreBreakdown={result.scoreBreakdown}
 />
 
               <QuantificationChartCard

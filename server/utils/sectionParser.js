@@ -69,6 +69,7 @@ const sectionAliases = {
     "educational background",
   ],
   certifications: [
+    "certificates",
     "certifications",
     "certification",
     "licenses & certifications",
@@ -82,7 +83,7 @@ const sectionAliases = {
     "courses",
     "coursework",
     "professional development",
-    "workshops",
+    "workshops", 
   ],
   achievements: [
     "achievements",
@@ -109,39 +110,27 @@ const createEmptySections = () => ({
 const isLikelyHeading = (line, rawLine = "") => {
   if (!line || line.length > 50) return false;
 
-  const wordCount = line.split(/\s+/).filter(Boolean).length;
-  if (wordCount > 4) return false;
-
   const trimmedRaw = rawLine.trim();
+
+  const hasBulletLikeStart = /^[•\-*]/.test(trimmedRaw);
+  if (hasBulletLikeStart) return false;
+
   const isMostlyUppercase =
     trimmedRaw &&
     trimmedRaw === trimmedRaw.toUpperCase() &&
     /[A-Z]/.test(trimmedRaw);
 
-  const hasBulletLikeStart = /^[•\-*]/.test(trimmedRaw);
-  if (hasBulletLikeStart) return false;
+  const endsWithHeadingPunctuation = /[:\-]$/.test(trimmedRaw);
 
-  return isMostlyUppercase || wordCount <= 3;
+  return isMostlyUppercase || endsWithHeadingPunctuation;
 };
 
 const detectSection = (normalizedLine, rawLine) => {
-  if (!isLikelyHeading(normalizedLine, rawLine)) return null;
-
   for (const [section, aliases] of Object.entries(sectionAliases)) {
     if (aliases.includes(normalizedLine)) return section;
   }
 
-  for (const [section, aliases] of Object.entries(sectionAliases)) {
-    if (
-      aliases.some(
-        (alias) =>
-          normalizedLine.startsWith(alias) &&
-          normalizedLine.length <= alias.length + 12
-      )
-    ) {
-      return section;
-    }
-  }
+  if (!isLikelyHeading(normalizedLine, rawLine)) return null;
 
   return null;
 };
@@ -162,8 +151,8 @@ const parseSections = (text) => {
   const sections = createEmptySections();
   const sectionOrder = []; // metadata: order sections appeared in
 
-  // default to summary so pre-heading content (name, contact) isn't silently dropped
-  let currentSection = null;;
+  // ignore pre-heading lines until a known section heading is found
+  let currentSection = null;
 
   for (const rawLine of lines) {
     const normalizedLine = normalizeHeading(rawLine);
