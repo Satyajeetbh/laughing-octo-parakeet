@@ -23,6 +23,8 @@ export default function DashboardPage() {
   const {
   file,
   setFile,
+  jobDescription,
+  setJobDescription,
   clearSelectedFile,
   result,
   error,
@@ -92,6 +94,8 @@ const strength = getResumeStrength(result?.finalScore);
         <ResumeUploadCard
           file={file}
           loading={isUploading}
+          jobDescription={jobDescription}
+          onJobDescriptionChange={setJobDescription}
           onFileChange={setFile}
           onSubmit={handleUpload}
           clearFile={clearSelectedFile}

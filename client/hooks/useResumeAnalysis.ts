@@ -27,6 +27,7 @@ type ProcessingStatus =
 
 export function useResumeAnalysis(user: AuthUser | null) {
   const [file, setFile] = useState<File | null>(null);
+  const [jobDescription, setJobDescription] = useState("");
   const [result, setResult] = useState<ResumeResult | null>(null);
   const [error, setError] = useState("");
   const [isUploading, setIsUploading] = useState(false);
@@ -156,6 +157,9 @@ const [isOpeningHistory, setIsOpeningHistory] = useState(false);
     try {
       const formData = new FormData();
       formData.append("resume", file);
+      if (jobDescription.trim()) {
+        formData.append("jobDescription", jobDescription.trim());
+      }
 
       const res = await fetch(`${apiUrl}/api/resume/upload`, {
         method: "POST",
@@ -199,6 +203,7 @@ const [isOpeningHistory, setIsOpeningHistory] = useState(false);
 
   const clearSelectedFile = () => {
     setFile(null);
+    setJobDescription("");
   };
 
   useEffect(() => {
@@ -216,6 +221,8 @@ const [isOpeningHistory, setIsOpeningHistory] = useState(false);
   return {
     file,
     setFile,
+    jobDescription,
+    setJobDescription,
     clearSelectedFile,
     result,
     error,

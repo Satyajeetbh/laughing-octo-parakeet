@@ -13,6 +13,8 @@ import { FileText, UploadCloud, X } from "lucide-react";
 type Props = {
   file: File | null;
   loading: boolean;
+  jobDescription: string;
+  onJobDescriptionChange: (value: string) => void;
   onFileChange: (file: File | null) => void;
   onSubmit: (e: React.FormEvent) => void;
   clearFile: () => void;
@@ -23,6 +25,8 @@ const MAX_FILE_SIZE_MB = 5;
 export default function ResumeUploadCard({
   file,
   loading,
+  jobDescription,
+  onJobDescriptionChange,
   onFileChange,
   onSubmit,
   clearFile,
@@ -96,7 +100,8 @@ export default function ResumeUploadCard({
           Upload Resume
         </CardTitle>
         <CardDescription>
-          Upload a PDF resume to analyze sections, extracted skills, and quantification strength.
+          Upload a PDF resume to analyze sections, extracted skills, and
+          quantification strength.
         </CardDescription>
       </CardHeader>
 
@@ -148,7 +153,9 @@ export default function ResumeUploadCard({
               <div className="flex items-start gap-3">
                 <FileText className="mt-0.5 h-5 w-5 text-primary" />
                 <div>
-                  <p className="text-sm font-medium text-foreground">Selected file</p>
+                  <p className="text-sm font-medium text-foreground">
+                    Selected file
+                  </p>
                   <p className="mt-1 break-all text-sm text-muted-foreground">
                     {file.name} • {formatFileSize(file.size)}
                   </p>
@@ -166,9 +173,36 @@ export default function ResumeUploadCard({
               </Button>
             </div>
           )}
+          
+          <div className="space-y-2">
+            <label
+              htmlFor="jobDescription"
+              className="text-sm font-medium text-foreground"
+            >
+              Job Description (optional)
+            </label>
+
+            <textarea
+              id="jobDescription"
+              value={jobDescription}
+              onChange={(e) => onJobDescriptionChange(e.target.value)}
+              placeholder="Paste a job description here to get role-specific keyword matching and missing-skill insights."
+              disabled={loading}
+              rows={6}
+              className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:border-primary"
+            />
+
+            <p className="text-xs text-muted-foreground">
+              Add a JD to compare your resume against a target role.
+            </p>
+          </div>
 
           <div className="flex flex-col gap-3 sm:flex-row">
-            <Button type="submit" disabled={loading || !file} className="sm:w-auto">
+            <Button
+              type="submit"
+              disabled={loading || !file}
+              className="sm:w-auto"
+            >
               {loading ? "Analyzing..." : "Upload Resume"}
             </Button>
 
