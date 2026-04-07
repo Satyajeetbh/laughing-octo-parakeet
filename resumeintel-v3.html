@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ResumeIntel</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;1,300&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#f8f8f6;
+  --white:#ffffff;
+  --ink:#111110;
+  --mid:#6b6b68;
+  --faint:#e2e2de;
+  --faint2:#ececea;
+  --blue:#1a4fff;
+  --blue-bg:#eef2ff;
+  --green:#16a34a;
+  --green-bg:#f0fdf4;
+  --amber:#b45309;
+  --amber-bg:#fffbeb;
+}
+
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans',sans-serif;overflow-x:hidden}
+
+/* NAV */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  height:56px;
+  background:rgba(248,248,246,0.92);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--faint);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 40px;
+}
+.nav-brand{
+  display:flex;align-items:center;gap:10px;
+  text-decoration:none;
+}
+.nav-brand-mark{
+  width:28px;height:28px;background:var(--ink);
+  display:flex;align-items:center;justify-content:center;
+}
+.nav-brand-mark svg{display:block}
+.nav-brand-name{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:14px;font-weight:500;
+  color:var(--ink);letter-spacing:-0.3px;
+}
+.nav-right{display:flex;align-items:center;gap:4px}
+.nav-link{
+  font-size:13px;color:var(--mid);
+  text-decoration:none;
+  padding:6px 12px;
+  border-radius:4px;
+  transition:background 0.15s,color 0.15s;
+}
+.nav-link:hover{background:var(--faint2);color:var(--ink)}
+.nav-btn{
+  font-size:13px;font-weight:500;
+  color:var(--white);background:var(--ink);
+  text-decoration:none;
+  padding:7px 16px;border-radius:4px;
+  margin-left:8px;
+  transition:opacity 0.15s;
+}
+.nav-btn:hover{opacity:0.82}
+
+/* HERO */
+.hero{
+  padding:120px 40px 80px;
+  max-width:1100px;margin:0 auto;
+  display:grid;grid-template-columns:1fr 420px;
+  gap:80px;align-items:start;
+}
+
+.hero-kicker{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;color:var(--mid);
+  letter-spacing:0.5px;
+  margin-bottom:28px;
+}
+.hero-kicker-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--green);
+  box-shadow:0 0 0 3px var(--green-bg);
+}
+
+h1{
+  font-size:clamp(40px,5vw,58px);
+  font-weight:300;
+  line-height:1.1;
+  letter-spacing:-1.5px;
+  color:var(--ink);
+  margin-bottom:24px;
+}
+h1 strong{font-weight:500}
+h1 em{
+  font-style:italic;
+  color:var(--mid);
+}
+
+.hero-sub{
+  font-size:16px;font-weight:300;
+  line-height:1.7;color:var(--mid);
+  max-width:440px;margin-bottom:40px;
+}
+
+.hero-actions{display:flex;align-items:center;gap:16px}
+
+.btn{
+  font-size:14px;font-weight:500;
+  text-decoration:none;
+  padding:10px 22px;border-radius:5px;
+  display:inline-flex;align-items:center;gap:8px;
+  transition:all 0.15s;
+}
+.btn-dark{background:var(--ink);color:var(--white)}
+.btn-dark:hover{background:#2a2a28}
+.btn-outline{
+  background:transparent;color:var(--mid);
+  border:1px solid var(--faint);
+}
+.btn-outline:hover{border-color:#bbb;color:var(--ink)}
+
+.hero-note{
+  font-size:12px;color:var(--mid);
+  margin-top:14px;
+  font-weight:300;
+}
+
+/* SCORE PANEL */
+.score-panel{
+  background:var(--white);
+  border:1px solid var(--faint);
+  border-radius:8px;
+  overflow:hidden;
+  box-shadow:0 1px 4px rgba(0,0,0,0.04);
+}
+.sp-header{
+  padding:14px 20px;
+  border-bottom:1px solid var(--faint);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.sp-header-title{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;color:var(--mid);
+  letter-spacing:0.5px;
+}
+.sp-status{
+  display:flex;align-items:center;gap:6px;
+  font-size:11px;color:var(--green);
+  font-weight:500;
+}
+.sp-status-dot{width:6px;height:6px;border-radius:50%;background:var(--green)}
+
+.sp-body{padding:24px 20px}
+
+.sp-score-row{
+  display:flex;align-items:baseline;gap:6px;
+  margin-bottom:4px;
+}
+.sp-score-num{
+  font-size:48px;font-weight:300;
+  letter-spacing:-2px;color:var(--ink);
+  line-height:1;font-family:'IBM Plex Mono',monospace;
+}
+.sp-score-denom{font-size:18px;color:var(--mid);font-weight:300}
+.sp-score-label{font-size:12px;color:var(--mid);margin-bottom:20px}
+
+.sp-bars{display:flex;flex-direction:column;gap:12px;margin-bottom:20px}
+.sp-bar-item{}
+.sp-bar-top{
+  display:flex;justify-content:space-between;
+  font-size:12px;color:var(--mid);
+  margin-bottom:5px;
+}
+.sp-bar-track{
+  height:3px;background:var(--faint2);border-radius:2px;overflow:hidden
+}
+.sp-bar-fill{
+  height:100%;border-radius:2px;background:var(--ink);
+  animation:fillBar 1s ease both;
+}
+@keyframes fillBar{from{width:0!important}}
+
+.sp-divider{border:none;border-top:1px solid var(--faint);margin:20px 0}
+
+.sp-skills-label{font-size:11px;color:var(--mid);margin-bottom:10px;font-weight:500;letter-spacing:0.3px}
+.sp-skills{display:flex;flex-wrap:wrap;gap:6px}
+.sp-skill{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;padding:3px 9px;
+  border-radius:3px;
+  border:1px solid var(--faint);
+  color:var(--mid);
+}
+.sp-skill.matched{
+  background:var(--blue-bg);
+  border-color:rgba(26,79,255,0.2);
+  color:var(--blue);
+}
+.sp-skill.missing{
+  background:var(--amber-bg);
+  border-color:rgba(180,83,9,0.2);
+  color:var(--amber);
+}
+
+/* DIVIDER */
+.section-divider{
+  border:none;border-top:1px solid var(--faint);
+  max-width:1100px;margin:0 auto;
+}
+
+/* FEATURES */
+.features-section{
+  max-width:1100px;margin:0 auto;
+  padding:72px 40px;
+}
+.fs-label{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;color:var(--mid);
+  letter-spacing:0.5px;margin-bottom:40px;
+}
+.features-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:1px;background:var(--faint);
+  border:1px solid var(--faint);
+  border-radius:6px;overflow:hidden;
+}
+.feat{
+  background:var(--white);
+  padding:32px 28px;
+  transition:background 0.15s;
+}
+.feat:hover{background:#fafaf8}
+.feat-icon-row{
+  display:flex;align-items:center;gap:10px;
+  margin-bottom:20px;
+}
+.feat-icon{
+  width:32px;height:32px;
+  background:var(--faint2);
+  border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+}
+.feat-index{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;color:var(--mid);
+}
+.feat-title{
+  font-size:15px;font-weight:500;
+  letter-spacing:-0.3px;margin-bottom:10px;
+}
+.feat-desc{
+  font-size:13px;font-weight:300;
+  line-height:1.7;color:var(--mid);
+}
+
+/* PROCESS */
+.process-section{
+  background:var(--white);
+  border-top:1px solid var(--faint);
+  border-bottom:1px solid var(--faint);
+}
+.process-inner{
+  max-width:1100px;margin:0 auto;
+  padding:72px 40px;
+  display:grid;grid-template-columns:220px 1fr;
+  gap:80px;align-items:start;
+}
+.process-heading{
+  font-size:13px;font-weight:300;color:var(--mid);
+  line-height:1.6;
+  position:sticky;top:80px;
+}
+.process-heading strong{
+  display:block;font-size:20px;font-weight:500;
+  color:var(--ink);letter-spacing:-0.5px;margin-bottom:8px;
+}
+.steps{display:flex;flex-direction:column;gap:0}
+.step{
+  display:grid;grid-template-columns:48px 1fr;
+  gap:24px;
+  padding:28px 0;
+  border-bottom:1px solid var(--faint);
+  align-items:start;
+}
+.step:last-child{border-bottom:none}
+.step-num{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:12px;color:var(--mid);
+  padding-top:3px;
+}
+.step-content{}
+.step-title{font-size:15px;font-weight:500;margin-bottom:6px;letter-spacing:-0.3px}
+.step-desc{font-size:13px;font-weight:300;line-height:1.7;color:var(--mid)}
+
+/* CTA */
+.cta-section{
+  max-width:1100px;margin:0 auto;
+  padding:80px 40px;
+  display:grid;grid-template-columns:1fr auto;
+  gap:40px;align-items:center;
+}
+.cta-text{}
+.cta-h{
+  font-size:clamp(28px,3.5vw,40px);
+  font-weight:300;letter-spacing:-1px;
+  line-height:1.15;margin-bottom:10px;
+}
+.cta-h strong{font-weight:500}
+.cta-sub{font-size:14px;font-weight:300;color:var(--mid)}
+
+/* FOOTER */
+footer{
+  border-top:1px solid var(--faint);
+  padding:24px 40px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.footer-brand{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:12px;color:var(--mid);text-decoration:none;
+}
+.footer-links{list-style:none;display:flex;gap:24px}
+.footer-links a{font-size:12px;color:var(--mid);text-decoration:none}
+.footer-links a:hover{color:var(--ink)}
+.footer-right{font-size:12px;color:var(--mid)}
+
+/* REVEAL */
+.reveal{
+  opacity:0;transform:translateY(16px);
+  transition:opacity 0.55s ease,transform 0.55s ease;
+}
+.reveal.in{opacity:1;transform:none}
+
+@media(max-width:860px){
+  .hero{grid-template-columns:1fr;gap:48px;padding:100px 24px 60px}
+  .score-panel{display:none}
+  .features-grid{grid-template-columns:1fr}
+  .process-inner{grid-template-columns:1fr;gap:32px}
+  .process-heading{position:static}
+  .cta-section{grid-template-columns:1fr;gap:24px}
+  footer{flex-direction:column;gap:16px;align-items:flex-start;padding:24px}
+  nav{padding:0 24px}
+  .features-section{padding:56px 24px}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="#" class="nav-brand">
+    <div class="nav-brand-mark">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <rect x="1" y="1" width="5" height="5" fill="white"/>
+        <rect x="8" y="1" width="5" height="5" fill="white" opacity="0.5"/>
+        <rect x="1" y="8" width="5" height="5" fill="white" opacity="0.5"/>
+        <rect x="8" y="8" width="5" height="5" fill="white"/>
+      </svg>
+    </div>
+    <span class="nav-brand-name">ResumeIntel</span>
+  </a>
+  <div class="nav-right">
+    <a href="#features" class="nav-link">Features</a>
+    <a href="#process" class="nav-link">How it works</a>
+    <a href="https://www.resumeintel.in/login" class="nav-link">Log in</a>
+    <a href="https://www.resumeintel.in/register" class="nav-btn">Get started</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-left">
+    <div class="hero-kicker">
+      <span class="hero-kicker-dot"></span>
+      ATS analysis · skill matching · instant feedback
+    </div>
+    <h1>
+      Your resume<br>
+      <strong>before</strong> the recruiter<br>
+      <em>ever sees it.</em>
+    </h1>
+    <p class="hero-sub">
+      Upload your resume and get an ATS compatibility score, skill gap report, and line-level feedback in seconds — powered by Claude.
+    </p>
+    <div class="hero-actions">
+      <a href="https://www.resumeintel.in/register" class="btn btn-dark">
+        Analyze my resume
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2.5 6.5h8M7 3l3.5 3.5L7 10" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
+      </a>
+      <a href="https://www.resumeintel.in/login" class="btn btn-outline">Log in</a>
+    </div>
+    <p class="hero-note">Free to use. No credit card.</p>
+  </div>
+
+  <div class="score-panel">
+    <div class="sp-header">
+      <span class="sp-header-title">analysis_output.json</span>
+      <span class="sp-status"><span class="sp-status-dot"></span>complete</span>
+    </div>
+    <div class="sp-body">
+      <div class="sp-score-row">
+        <span class="sp-score-num">84</span>
+        <span class="sp-score-denom">/100</span>
+      </div>
+      <p class="sp-score-label">ATS compatibility score</p>
+
+      <div class="sp-bars">
+        <div class="sp-bar-item">
+          <div class="sp-bar-top"><span>Skill match</span><span>91%</span></div>
+          <div class="sp-bar-track"><div class="sp-bar-fill" style="width:91%"></div></div>
+        </div>
+        <div class="sp-bar-item">
+          <div class="sp-bar-top"><span>Quantification</span><span>76%</span></div>
+          <div class="sp-bar-track"><div class="sp-bar-fill" style="width:76%;animation-delay:.15s"></div></div>
+        </div>
+        <div class="sp-bar-item">
+          <div class="sp-bar-top"><span>Structure</span><span>88%</span></div>
+          <div class="sp-bar-track"><div class="sp-bar-fill" style="width:88%;animation-delay:.3s"></div></div>
+        </div>
+      </div>
+
+      <hr class="sp-divider"/>
+
+      <p class="sp-skills-label">DETECTED SKILLS</p>
+      <div class="sp-skills">
+        <span class="sp-skill matched">React</span>
+        <span class="sp-skill matched">Node.js</span>
+        <span class="sp-skill matched">MongoDB</span>
+        <span class="sp-skill matched">Next.js</span>
+        <span class="sp-skill matched">REST APIs</span>
+        <span class="sp-skill missing">Docker</span>
+        <span class="sp-skill missing">Kubernetes</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="section-divider"/>
+
+<!-- FEATURES -->
+<div class="features-section reveal" id="features">
+  <p class="fs-label">// what it checks</p>
+  <div class="features-grid">
+    <div class="feat">
+      <div class="feat-icon-row">
+        <div class="feat-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1" fill="#6b6b68"/><rect x="9" y="2" width="5" height="5" rx="1" fill="#6b6b68" opacity=".4"/><rect x="2" y="9" width="5" height="5" rx="1" fill="#6b6b68" opacity=".4"/><rect x="9" y="9" width="5" height="5" rx="1" fill="#6b6b68"/></svg>
+        </div>
+        <span class="feat-index">01</span>
+      </div>
+      <div class="feat-title">Resume metrics</div>
+      <p class="feat-desc">Word count, section structure, completeness — every measurable dimension of your resume analyzed and flagged.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-icon-row">
+        <div class="feat-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="4" stroke="#6b6b68" stroke-width="1.5"/><path d="M11 11l2.5 2.5" stroke="#6b6b68" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+        <span class="feat-index">02</span>
+      </div>
+      <div class="feat-title">Skill extraction</div>
+      <p class="feat-desc">Semantic matching surfaces every skill present in your resume and flags gaps against the role you're targeting.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-icon-row">
+        <div class="feat-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 12l3-4 3 2 3-5 3 3" stroke="#6b6b68" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <span class="feat-index">03</span>
+      </div>
+      <div class="feat-title">Quantification signals</div>
+      <p class="feat-desc">Checks whether your bullets are backed by numbers, percentages, and impact language — the signals that move recruiters.</p>
+    </div>
+  </div>
+</div>
+
+<hr class="section-divider"/>
+
+<!-- PROCESS -->
+<div class="process-section" id="process">
+  <div class="process-inner reveal">
+    <div class="process-heading">
+      <strong>How it works</strong>
+      Three steps from upload to a resume that's actually ready.
+    </div>
+    <div class="steps">
+      <div class="step">
+        <span class="step-num">01</span>
+        <div class="step-content">
+          <div class="step-title">Upload your resume</div>
+          <p class="step-desc">Paste your text or upload a PDF. The parser extracts every section — experience, education, skills — with no setup needed.</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-num">02</span>
+        <div class="step-content">
+          <div class="step-title">Analysis runs</div>
+          <p class="step-desc">Claude scores your resume against ATS criteria, runs semantic skill matching, and checks quantification across every bullet.</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-num">03</span>
+        <div class="step-content">
+          <div class="step-title">Read the report, fix the gaps</div>
+          <p class="step-desc">You get a structured report: overall score, per-metric breakdowns, detected skills, missing keywords, and specific line-level suggestions.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CTA -->
+<div class="cta-section reveal">
+  <div class="cta-text">
+    <h2 class="cta-h">Know your score<br><strong>before you apply.</strong></h2>
+    <p class="cta-sub">Free to use. Takes about 30 seconds.</p>
+  </div>
+  <a href="https://www.resumeintel.in/register" class="btn btn-dark" style="white-space:nowrap;padding:12px 28px;font-size:14px">
+    Analyze my resume
+    <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2.5 6.5h8M7 3l3.5 3.5L7 10" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
+  </a>
+</div>
+
+<footer>
+  <a href="#" class="footer-brand">resumeintel</a>
+  <ul class="footer-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="https://www.resumeintel.in/login">Log in</a></li>
+    <li><a href="https://www.resumeintel.in/register">Sign up</a></li>
+  </ul>
+  <span class="footer-right">© 2026</span>
+</footer>
+
+<script>
+const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:0.08});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+</script>
+</body>
+</html>

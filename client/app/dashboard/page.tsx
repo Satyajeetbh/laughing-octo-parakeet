@@ -16,6 +16,7 @@ import ResumeHistoryCard from "@/components/dashboard/resume-history-card";
 import FeedbackCard from "@/components/dashboard/feedback-card";
 import JDMatchCard from "@/components/dashboard/jd-match-card";
 import { getResumeStrength } from "@/lib/getResumeStrength";
+import AnalysisSummaryCard from "@/components/dashboard/analysis-summary-card";
 
 export default function DashboardPage() {
   const { user, logout } = useAuth();
@@ -125,25 +126,13 @@ const strength = getResumeStrength(result?.finalScore);
   />
 )}
           
-          <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-  <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-    <div>
-      <p className="text-sm text-muted-foreground">Current Analysis</p>
-      <h2 className="text-2xl font-bold text-foreground">
-        Final Score: {result.finalScore}
-      </h2>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Resume score: {result.resumeScore} • Skills detected: {result.skills.length}
-      </p>
-    </div>
-
-    {strength && (
-      <Badge variant={strength.variant} className="rounded-full">
-        {strength.label}
-      </Badge>
-    )}
-  </div>
-</div>
+<AnalysisSummaryCard
+  finalScore={result.finalScore}
+  resumeScore={result.resumeScore}
+  skillsCount={result.skills.length}
+  hasJDMatch={!!result.jdMatch}
+  strength={strength}
+/>
 
             <StatsGrid
               wordCount={result.wordCount}

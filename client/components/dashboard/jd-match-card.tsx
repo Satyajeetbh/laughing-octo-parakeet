@@ -1,10 +1,4 @@
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 type Props = {
@@ -19,46 +13,56 @@ export default function JDMatchCard({
   missingKeywords,
 }: Props) {
   return (
-    <Card className="rounded-3xl border-border shadow-sm">
+    <Card className="rounded-2xl shadow-sm">
       <CardHeader>
         <CardTitle>Job Description Match</CardTitle>
         <CardDescription>
-          Keyword alignment between the uploaded resume and job description.
+          Shows how well your resume aligns with the provided job description.
         </CardDescription>
       </CardHeader>
 
-      <CardContent className="space-y-5">
+      <CardContent className="space-y-6">
         <div>
-          <p className="text-sm text-muted-foreground">Match Percentage</p>
-          <p className="text-2xl font-bold text-foreground">{matchPercentage}%</p>
+          <p className="text-sm text-muted-foreground">Match percentage</p>
+          <p className="mt-2 text-4xl font-bold text-foreground">
+            {matchPercentage}%
+          </p>
         </div>
 
         <div>
-          <p className="mb-2 text-sm font-medium text-foreground">Matched Keywords</p>
-          <div className="flex flex-wrap gap-2">
-            {matchedKeywords.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No matched keywords.</p>
-            ) : (
+          <h3 className="text-sm font-medium text-foreground">
+            Matched keywords
+          </h3>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {matchedKeywords.length > 0 ? (
               matchedKeywords.map((keyword) => (
-                <Badge key={keyword} variant="secondary">
+                <Badge key={keyword} variant="secondary" className="rounded-full">
                   {keyword}
                 </Badge>
               ))
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                No matched keywords found.
+              </p>
             )}
           </div>
         </div>
 
         <div>
-          <p className="mb-2 text-sm font-medium text-foreground">Missing Keywords</p>
-          <div className="flex flex-wrap gap-2">
-            {missingKeywords.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No missing keywords.</p>
-            ) : (
+          <h3 className="text-sm font-medium text-foreground">
+            Missing keywords
+          </h3>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {missingKeywords.length > 0 ? (
               missingKeywords.map((keyword) => (
-                <Badge key={keyword} variant="outline">
+                <Badge key={keyword} variant="outline" className="rounded-full">
                   {keyword}
                 </Badge>
               ))
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                No missing keywords detected.
+              </p>
             )}
           </div>
         </div>

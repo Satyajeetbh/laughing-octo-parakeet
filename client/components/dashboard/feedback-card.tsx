@@ -1,10 +1,4 @@
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 type Props = {
   title: string;
@@ -12,28 +6,34 @@ type Props = {
   items: string[];
 };
 
-export default function FeedbackCard({ title, description, items }: Props) {
+export default function FeedbackCard({
+  title,
+  description,
+  items,
+}: Props) {
   return (
-    <Card className="rounded-3xl border-border shadow-sm">
+    <Card className="rounded-2xl shadow-sm">
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
 
       <CardContent>
-        {items.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No items available.</p>
-        ) : (
-          <div className="space-y-3">
+        {items.length > 0 ? (
+          <ul className="space-y-3">
             {items.map((item, index) => (
-              <div
+              <li
                 key={`${title}-${index}`}
-                className="rounded-xl border border-border bg-background px-4 py-3 text-sm text-foreground"
+                className="text-sm leading-6 text-foreground"
               >
                 {item}
-              </div>
+              </li>
             ))}
-          </div>
+          </ul>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            No items available for this section.
+          </p>
         )}
       </CardContent>
     </Card>

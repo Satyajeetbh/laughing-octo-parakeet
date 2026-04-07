@@ -56,6 +56,8 @@ export default function ResumeScoreCard({
             </CardDescription>
           </div>
 
+          
+
           <Badge variant={label.variant} className="rounded-full">
             {label.text}
           </Badge>
@@ -77,6 +79,18 @@ export default function ResumeScoreCard({
               calculated by backend scoring engine
             </p>
           </div>
+
+          <div className="rounded-xl border border-border bg-muted/40 p-3">
+  <p className="text-sm font-medium text-foreground">
+    Resume Score vs Final Score
+  </p>
+  <p className="mt-1 text-sm text-muted-foreground">
+    Resume Score measures the quality of your resume itself. Final Score may also include job-description matching when a JD is provided.
+  </p>
+  <p className="mt-2 text-sm text-foreground">
+    Resume Score: {resumeScore} • Final Score: {finalScore}
+  </p>
+</div>
 
           <Progress value={displayScore} className="mt-4 h-3" />
         </div>
