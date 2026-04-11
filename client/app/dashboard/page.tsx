@@ -17,37 +17,47 @@ import FeedbackCard from "@/components/dashboard/feedback-card";
 import JDMatchCard from "@/components/dashboard/jd-match-card";
 import { getResumeStrength } from "@/lib/getResumeStrength";
 import AnalysisSummaryCard from "@/components/dashboard/analysis-summary-card";
+import AISummaryCard from "@/components/dashboard/ai-summary-card";
+import PriorityActionsCard from "@/components/dashboard/priority-actions-card";
+import RewriteSuggestionsCard from "@/components/dashboard/rewrite-suggestions-card";
+import ResumeComparisonCard from "@/components/dashboard/resume-comparison-card";
 
 export default function DashboardPage() {
   const { user, logout } = useAuth();
 
   const {
-  file,
-  setFile,
-  jobDescription,
-  setJobDescription,
-  clearSelectedFile,
-  result,
-  error,
-  isUploading,
-  isOpeningHistory,
-  resumeId,
-  processingStatus,
-  history,
-  historyLoading,
-  handleUpload,
-  loadResumeFromHistory,
-} = useResumeAnalysis(user);
+    file,
+    setFile,
+    jobDescription,
+    setJobDescription,
+    clearSelectedFile,
+    result,
+    error,
+    isUploading,
+    isOpeningHistory,
+    resumeId,
+    processingStatus,
+    history,
+    historyLoading,
+    handleUpload,
+    loadResumeFromHistory,
+    comparison,
+    comparisonLoading,
+    analyzeWithAI,
+    setAnalyzeWithAI,
+  } = useResumeAnalysis(user);
 
   const detectedSections = result
-  ? Array.isArray(result.sectionOrder) && result.sectionOrder.length > 0
-    ? result.sectionOrder
-    : Object.entries(result.sections)
-        .filter(([, value]) => typeof value === "string" && value.trim().length > 0)
-        .map(([key]) => key)
-  : [];
+    ? Array.isArray(result.sectionOrder) && result.sectionOrder.length > 0
+      ? result.sectionOrder
+      : Object.entries(result.sections)
+          .filter(
+            ([, value]) => typeof value === "string" && value.trim().length > 0,
+          )
+          .map(([key]) => key)
+    : [];
 
-const strength = getResumeStrength(result?.finalScore);
+  const strength = getResumeStrength(result?.finalScore);
 
   if (!user) return null;
 
@@ -71,16 +81,16 @@ const strength = getResumeStrength(result?.finalScore);
                 {isUploading
                   ? "Uploading..."
                   : isOpeningHistory
-                  ? "Opening saved result..."
-                  : processingStatus === "queued"
-                  ? "Queued for processing"
-                  : processingStatus === "processing"
-                  ? "Analyzing..."
-                  : processingStatus === "completed"
-                  ? "Analysis complete"
-                  : processingStatus === "failed"
-                  ? "Analysis failed"
-                  : "Ready to analyze"}
+                    ? "Opening saved result..."
+                    : processingStatus === "queued"
+                      ? "Queued for processing"
+                      : processingStatus === "processing"
+                        ? "Analyzing..."
+                        : processingStatus === "completed"
+                          ? "Analysis complete"
+                          : processingStatus === "failed"
+                            ? "Analysis failed"
+                            : "Ready to analyze"}
               </span>
 
               {strength && (
@@ -100,6 +110,8 @@ const strength = getResumeStrength(result?.finalScore);
           onFileChange={setFile}
           onSubmit={handleUpload}
           clearFile={clearSelectedFile}
+          analyzeWithAI={analyzeWithAI}
+          onAnalyzeWithAIChange={setAnalyzeWithAI}
         />
 
         <ResumeHistoryCard
@@ -118,21 +130,35 @@ const strength = getResumeStrength(result?.finalScore);
 
         {result && (
           <>
-          {result.jdMatch && (
-  <JDMatchCard
-    matchPercentage={result.jdMatch.matchPercentage}
-    matchedKeywords={result.jdMatch.matchedKeywords}
-    missingKeywords={result.jdMatch.missingKeywords}
-  />
-)}
-          
-<AnalysisSummaryCard
-  finalScore={result.finalScore}
-  resumeScore={result.resumeScore}
-  skillsCount={result.skills.length}
-  hasJDMatch={!!result.jdMatch}
-  strength={strength}
-/>
+            {result.jdMatch && (
+              <JDMatchCard
+                matchPercentage={result.jdMatch.matchPercentage}
+                matchedKeywords={result.jdMatch.matchedKeywords}
+                missingKeywords={result.jdMatch.missingKeywords}
+              />
+            )}
+
+            <div className="grid gap-6 lg:grid-cols-2">
+              <PriorityActionsCard
+                actions={result.aiInsights?.priorityActions || []}
+              />
+              <RewriteSuggestionsCard
+                rewrites={result.aiInsights?.rewrittenBullets || []}
+              />
+            </div>
+
+            <AnalysisSummaryCard
+              finalScore={result.finalScore}
+              resumeScore={result.resumeScore}
+              skillsCount={result.skills.length}
+              hasJDMatch={!!result.jdMatch}
+              strength={strength}
+            />
+
+            <ResumeComparisonCard
+              comparison={comparison}
+              loading={comparisonLoading}
+            />
 
             <StatsGrid
               wordCount={result.wordCount}
@@ -146,7 +172,7 @@ const strength = getResumeStrength(result?.finalScore);
                 resumeScore={result.resumeScore}
                 finalScore={result.finalScore}
                 scoreBreakdown={result.scoreBreakdown}
-/>
+              />
 
               <QuantificationChartCard
                 totalBullets={result.quantification.total_bullets}
@@ -156,18 +182,18 @@ const strength = getResumeStrength(result?.finalScore);
               />
             </div>
             <div className="grid gap-6 lg:grid-cols-2">
-  <FeedbackCard
-    title="Strengths"
-    description="What your resume is already doing well."
-    items={result.feedback.strengths}
-  />
+              <FeedbackCard
+                title="Strengths"
+                description="What your resume is already doing well."
+                items={result.feedback.strengths}
+              />
 
-  <FeedbackCard
-    title="Improvements"
-    description="Where the resume can be made stronger."
-    items={result.feedback.improvements}
-  />
-</div>
+              <FeedbackCard
+                title="Improvements"
+                description="Where the resume can be made stronger."
+                items={result.feedback.improvements}
+              />
+            </div>
 
             <div className="grid gap-6 lg:grid-cols-2">
               <SectionsCard sections={detectedSections} />

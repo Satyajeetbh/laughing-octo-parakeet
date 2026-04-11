@@ -1,11 +1,14 @@
 const express = require("express");
 const multer = require("multer");
 const { protect } = require("../middleware/authMiddleware");
+const { uploadLimiter } = require("../middleware/rateLimiters");
+
 const {
   uploadResume,
   getResumeStatus,
   getResumeResult,
   getResumeHistory,
+  getResumeComparison,
 } = require("../controllers/resumeController");
 
 const router = express.Router();
@@ -21,10 +24,11 @@ const upload = multer({
   },
 });
 
-router.post("/upload", protect, upload.single("resume"), uploadResume);
+router.post("/upload", uploadLimiter, protect, upload.single("resume"), uploadResume);
 router.get("/", protect, getResumeHistory);
 router.get("/:id/status", protect, getResumeStatus);
 router.get("/:id", protect, getResumeResult);
+router.get("/:id/compare/:previousId", protect, getResumeComparison);
 
 
 module.exports = router;

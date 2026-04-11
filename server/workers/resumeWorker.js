@@ -13,7 +13,14 @@ async function bootstrap() {
   const worker = new Worker(
     "resume-processing",
     async (job) => {
-      const { resumeId, userId, fileBuffer, originalName, jobDescription } = job.data;
+      const {
+  resumeId,
+  userId,
+  fileBuffer,
+  originalName,
+  jobDescription,
+  analyzeWithAI,
+} = job.data;
 
       await Resume.findByIdAndUpdate(resumeId, {
         processingStatus: "processing",
@@ -23,12 +30,13 @@ async function bootstrap() {
       const decodedBuffer = Buffer.from(fileBuffer, "base64");
 
       const result = await processResumeAnalysis({
-        resumeId,
-        fileBuffer: decodedBuffer,
-        originalName,
-        userId,
-        jobDescription,
-      });
+  resumeId,
+  fileBuffer: decodedBuffer,
+  originalName,
+  userId,
+  jobDescription,
+  analyzeWithAI,
+});
 
       return {
         resumeId: result._id.toString(),

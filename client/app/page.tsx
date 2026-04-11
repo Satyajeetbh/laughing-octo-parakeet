@@ -15,11 +15,11 @@ export default function Home() {
         <div className="grid w-full gap-10 rounded-3xl border border-border bg-card/80 p-8 shadow-xl backdrop-blur md:grid-cols-2 md:p-12">
           <div className="flex flex-col justify-center">
             <span className="mb-4 inline-flex w-fit rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
-              ai resume analysis
+              AI resume analysis tool
             </span>
 
             <h1 className="text-4xl font-bold tracking-tight text-foreground md:text-5xl">
-              Placement Intel
+              ResumeIntel
             </h1>
 
             <p className="mt-4 max-w-xl text-base leading-7 text-muted-foreground md:text-lg">

@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ResumeHistoryItem, ResumeResult } from "@/types/resume";
+import { ResumeComparison, ResumeHistoryItem, ResumeResult } from "@/types/resume";
+
 
 type AuthUser = {
   _id: string;
@@ -31,13 +32,18 @@ export function useResumeAnalysis(user: AuthUser | null) {
   const [result, setResult] = useState<ResumeResult | null>(null);
   const [error, setError] = useState("");
   const [isUploading, setIsUploading] = useState(false);
-const [isOpeningHistory, setIsOpeningHistory] = useState(false);
+  const [isOpeningHistory, setIsOpeningHistory] = useState(false);
   const [resumeId, setResumeId] = useState("");
   const [processingStatus, setProcessingStatus] =
     useState<ProcessingStatus>("idle");
 
   const [history, setHistory] = useState<ResumeHistoryItem[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [comparison, setComparison] = useState<ResumeComparison | null>(null);
+  const [comparisonLoading, setComparisonLoading] = useState(false);
+  const [analyzeWithAI, setAnalyzeWithAI] = useState(
+  String(process.env.NEXT_PUBLIC_AI_DEFAULT_ENABLED || "false").toLowerCase() === "true"
+);
 
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -76,6 +82,32 @@ const [isOpeningHistory, setIsOpeningHistory] = useState(false);
     }
   };
 
+  const fetchResumeComparison = async (currentId: string, previousId: string) => {
+    if (!user) return;
+
+    setComparisonLoading(true);
+    try {
+      const res = await fetch(`${apiUrl}/api/resume/${currentId}/compare/${previousId}`, {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to fetch comparison");
+      }
+
+      setComparison(data);
+    } catch (err: any) {
+      setError(err.message || "Failed to load comparison");
+      setComparison(null);
+    } finally {
+      setComparisonLoading(false);
+    }
+  };
+
   const fetchResumeResult = async (id: string) => {
     if (!user) return;
 
@@ -93,8 +125,14 @@ const [isOpeningHistory, setIsOpeningHistory] = useState(false);
 
     setResumeId(id);
     setResult(data);
+    setComparison(null);
+    if (data?.previousResumeId) {
+      await fetchResumeComparison(id, data.previousResumeId);
+    }
     setProcessingStatus(data.processingStatus || "completed");
   };
+
+
 
   const pollResumeStatus = (id: string) => {
     clearPolling();
@@ -150,12 +188,15 @@ const [isOpeningHistory, setIsOpeningHistory] = useState(false);
 
     setError("");
     setIsUploading(true);
+    setComparison(null);
     setResult(null);
     setResumeId("");
     setProcessingStatus("uploading");
 
+
     try {
       const formData = new FormData();
+      formData.append("analyzeWithAI", String(analyzeWithAI));
       formData.append("resume", file);
       if (jobDescription.trim()) {
         formData.append("jobDescription", jobDescription.trim());
@@ -188,18 +229,18 @@ const [isOpeningHistory, setIsOpeningHistory] = useState(false);
   };
 
   const loadResumeFromHistory = async (id: string) => {
-  if (!user) return;
+    if (!user) return;
 
-  try {
-    setError("");
-    setIsOpeningHistory(true);
-    await fetchResumeResult(id);
-  } catch (err: any) {
-    setError(err.message || "Failed to open resume result");
-  } finally {
-    setIsOpeningHistory(false);
-  }
-};
+    try {
+      setError("");
+      setIsOpeningHistory(true);
+      await fetchResumeResult(id);
+    } catch (err: any) {
+      setError(err.message || "Failed to open resume result");
+    } finally {
+      setIsOpeningHistory(false);
+    }
+  };
 
   const clearSelectedFile = () => {
     setFile(null);
@@ -207,10 +248,10 @@ const [isOpeningHistory, setIsOpeningHistory] = useState(false);
   };
 
   useEffect(() => {
-  return () => {
-    clearPolling();
-  };
-}, []);
+    return () => {
+      clearPolling();
+    };
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -235,5 +276,9 @@ const [isOpeningHistory, setIsOpeningHistory] = useState(false);
     handleUpload,
     loadResumeFromHistory,
     fetchResumeHistory,
+    comparison,
+    comparisonLoading,
+    analyzeWithAI,
+    setAnalyzeWithAI,
   };
 }

@@ -18,6 +18,8 @@ type Props = {
   onFileChange: (file: File | null) => void;
   onSubmit: (e: React.FormEvent) => void;
   clearFile: () => void;
+  analyzeWithAI: boolean;
+  onAnalyzeWithAIChange: (value: boolean) => void;
 };
 
 const MAX_FILE_SIZE_MB = 5;
@@ -30,6 +32,8 @@ export default function ResumeUploadCard({
   onFileChange,
   onSubmit,
   clearFile,
+  analyzeWithAI,
+  onAnalyzeWithAIChange,
 }: Props) {
   const [dragActive, setDragActive] = useState(false);
   const [fileError, setFileError] = useState("");
@@ -173,7 +177,7 @@ export default function ResumeUploadCard({
               </Button>
             </div>
           )}
-          
+
           <div className="space-y-2">
             <label
               htmlFor="jobDescription"
@@ -196,7 +200,34 @@ export default function ResumeUploadCard({
               Add a JD to compare your resume against a target role.
             </p>
           </div>
+          <div className="rounded-2xl border border-border bg-muted/30 p-4">
+            <p className="text-sm font-medium text-foreground">Analysis Mode</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              AI mode gives rewritten bullets and AI suggestions. Non-AI mode
+              uses deterministic scoring only.
+            </p>
 
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Button
+                type="button"
+                variant={analyzeWithAI ? "default" : "outline"}
+                onClick={() => onAnalyzeWithAIChange(true)}
+                disabled={loading}
+              >
+                Analyze with AI
+              </Button>
+
+              <Button
+                type="button"
+                variant={!analyzeWithAI ? "default" : "outline"}
+                onClick={() => onAnalyzeWithAIChange(false)}
+                disabled={loading}
+              >
+                Analyze without AI
+              </Button>
+            </div>
+            
+          </div>
           <div className="flex flex-col gap-3 sm:flex-row">
             <Button
               type="submit"
